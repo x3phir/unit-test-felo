@@ -21,7 +21,8 @@ Phase 1 covers the highest-risk services from the PRD:
 2. `matching-service`
 3. `wallet-service`
 4. `payment-service`
-5. `location-service`
+5. `pricing-service`
+6. `location-service`
 
 Phase 2 extends the same structure to:
 
