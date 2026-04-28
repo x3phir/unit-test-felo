@@ -27,11 +27,7 @@ Pastikan hal berikut tersedia:
 
 1. Go sudah terpasang.
 2. Command `go` bisa dijalankan dari terminal.
-3. Working directory berada di root repo:
-
-```powershell
-cd 'C:\Users\Harri Supriadi\Documents\unit-test-felo'
-```
+3. Working directory berada di root repo
 
 ## 1. Menjalankan Semua Unit Test
 
