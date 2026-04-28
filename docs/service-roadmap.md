@@ -6,6 +6,7 @@
 | matching-service | P1 | Scaffolded | Retry radius and nearest-driver matching |
 | wallet-service | P1 | Scaffolded | Settlement and idempotency |
 | payment-service | P1 | Scaffolded | Wallet charge and invoice orchestration |
+| pricing-service | P1 | Scaffolded | Dynamic pricing, surge multiplier, fare audit |
 | location-service | P1 | Scaffolded | History, latest cache, route estimation |
 | tracking-service | P2 | Planned | GPS stream ownership and active trip broadcast |
 | user-service | P2 | Planned | Profile read/write and validation |

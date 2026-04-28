@@ -11,6 +11,7 @@ The initial scaffold focuses on the five highest-risk services from the PRD:
 - `matching-service`
 - `wallet-service`
 - `payment-service`
+- `pricing-service`
 - `location-service`
 
 The remaining services are tracked in [docs/service-roadmap.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\service-roadmap.md).
