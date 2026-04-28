@@ -1,0 +1,20 @@
+[
+  {
+    "id": "cust-active-001",
+    "wallet_balance": 200000,
+    "currency": "IDR",
+    "status": "active"
+  },
+  {
+    "id": "cust-active-002",
+    "wallet_balance": 150000,
+    "currency": "IDR",
+    "status": "active"
+  },
+  {
+    "id": "cust-low-balance-001",
+    "wallet_balance": 10000,
+    "currency": "IDR",
+    "status": "active"
+  }
+]

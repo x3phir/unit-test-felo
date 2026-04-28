@@ -1,0 +1,34 @@
+[
+  {
+    "id": "driver-active-001",
+    "status": "available",
+    "location": {
+      "latitude": -6.201,
+      "longitude": 106.818
+    }
+  },
+  {
+    "id": "driver-active-002",
+    "status": "available",
+    "location": {
+      "latitude": -6.202,
+      "longitude": 106.820
+    }
+  },
+  {
+    "id": "driver-active-003",
+    "status": "available",
+    "location": {
+      "latitude": -6.205,
+      "longitude": 106.825
+    }
+  },
+  {
+    "id": "driver-offline-001",
+    "status": "offline",
+    "location": {
+      "latitude": -6.210,
+      "longitude": 106.830
+    }
+  }
+]

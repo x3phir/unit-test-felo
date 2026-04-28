@@ -14,3 +14,13 @@
 | invoice-service | P2 | Planned | Invoice generation and retrieval |
 | feedback-service | P2 | Planned | Rating rules and duplicate submission guard |
 | notification-service | P2 | Planned | Push, WA, SMS fallback behavior |
+
+## Functional Test Status
+
+| Area | Status | Notes |
+|---|---|---|
+| Functional harness | Scaffolded | Uses build tag `functional` |
+| Docker infra | Scaffolded | PostgreSQL, Redis, RabbitMQ |
+| Smoke suite | Scaffolded | Waits for gRPC adapter wiring |
+| Critical-flow suite | Scaffolded | Regular ride and FELO-Now |
+| Full regression suite | Scaffolded | Includes negative flow placeholders |
