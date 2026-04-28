@@ -14,6 +14,7 @@ The initial scaffold focuses on the five highest-risk services from the PRD:
 - `location-service`
 
 The remaining services are tracked in [docs/service-roadmap.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\service-roadmap.md).
+How to run the tests is documented in [docs/run-testing-guide.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\run-testing-guide.md).
 
 ## Principles
 
