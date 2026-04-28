@@ -1,0 +1,11 @@
+coverage.out
+coverage.html
+gotest.json
+junit.xml
+bin/
+dist/
+*.test
+*.exe
+*.out
+.idea/
+.vscode/
