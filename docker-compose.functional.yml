@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   postgres-ride:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-ride
     environment:
       POSTGRES_USER: felo
@@ -17,7 +17,7 @@ services:
       retries: 20
 
   postgres-matching:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-matching
     environment:
       POSTGRES_USER: felo
@@ -32,7 +32,7 @@ services:
       retries: 20
 
   postgres-wallet:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-wallet
     environment:
       POSTGRES_USER: felo
@@ -47,7 +47,7 @@ services:
       retries: 20
 
   postgres-payment:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-payment
     environment:
       POSTGRES_USER: felo
@@ -62,7 +62,7 @@ services:
       retries: 20
 
   postgres-location:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-location
     environment:
       POSTGRES_USER: felo
@@ -143,6 +143,51 @@ services:
       - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: felo-postgres-order
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: order_db
+    ports:
+      - "54333:5432"
+
+  postgres-cart:
+    image: postgres:16-alpine
+    container_name: felo-postgres-cart
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: cart_db
+    ports:
+      - "54334:5432"
+
+  postgres-sendorder:
+    image: postgres:16-alpine
+    container_name: felo-postgres-sendorder
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: sendorder_db
+    ports:
+      - "54335:5432"
+
+  postgres-shipment:
+    image: postgres:16-alpine
+    container_name: felo-postgres-shipment
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: shipment_db
+    ports:
+      - "54336:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d shipment_db"]
       interval: 5s
       timeout: 5s
       retries: 20
