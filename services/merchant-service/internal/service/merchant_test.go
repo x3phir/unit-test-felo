@@ -17,24 +17,28 @@ import (
 func TestIsMerchantOpen(t *testing.T) {
 	mRepo := &merchantRepoFake{
 		merchants: map[string]*domain.Merchant{
-			"MCH-1": {MerchantID: "MCH-1", Status: "active"},
-			"MCH-2": {MerchantID: "MCH-2", Status: "inactive"},
+			"MCH-1": {ID: "MCH-1", OpenTime: "08:00", CloseTime: "22:00", IsManuallyClosed: false},
+			"MCH-2": {ID: "MCH-2", OpenTime: "08:00", CloseTime: "22:00", IsManuallyClosed: true},
 		},
 	}
 	mnRepo := &menuRepoFake{}
 	
-	svc := service.NewMerchantService(mRepo, mnRepo, time.Now)
+	mockTime := func() time.Time {
+		t, _ := time.Parse("15:04", "12:00") // Jam 12 siang
+		return t
+	}
+	svc := service.NewMerchantService(mRepo, mnRepo, mockTime)
 
 	// Kasus 1: Buka normal
 	isOpen, _ := svc.IsMerchantOpen(context.Background(), "MCH-1")
 	if !isOpen {
-		t.Errorf("MCH-1 harusnya buka karena status active")
+		t.Errorf("MCH-1 harusnya buka pada jam 12:00")
 	}
 
 	// Kasus 2: Tutup darurat
 	isOpen2, _ := svc.IsMerchantOpen(context.Background(), "MCH-2")
 	if isOpen2 {
-		t.Errorf("MCH-2 harusnya tutup karena status inactive")
+		t.Errorf("MCH-2 harusnya tutup karena IsManuallyClosed = true")
 	}
 }
 

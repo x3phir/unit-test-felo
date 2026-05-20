@@ -4,11 +4,14 @@ import "time"
 
 // Merchant mewakili entitas restoran/toko
 type Merchant struct {
-	MerchantID  string
-	OwnerUserID string
-	Name        string
-	Status      string
-	UpdatedAt   time.Time
+	ID               string
+	Name             string
+	Latitude         float64 // Esensial untuk kalkulasi jarak > 1 KM di Order Service [cite: 53-54, 262-263]
+	Longitude        float64
+	OpenTime         string  // Format "HH:MM"
+	CloseTime        string  // Format "HH:MM"
+	IsManuallyClosed bool    // Toggle Tutup Darurat
+	CreatedAt        time.Time
 }
 
 // Menu mewakili item makanan/minuman yang terikat pada Merchant
