@@ -11,7 +11,6 @@ type InvoiceRepository interface {
 	GetByID(ctx context.Context, id string) (*domain.Invoice, error)
 	GetByOrderID(ctx context.Context, orderID string) ([]domain.Invoice, error)
 	UpdateStatus(ctx context.Context, id string, status domain.InvoiceStatus) error
-	UpdatePaymentReference(ctx context.Context, id string, reference string) error
 }
 
 type NotificationPublisher interface {

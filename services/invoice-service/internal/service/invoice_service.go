@@ -30,20 +30,18 @@ func NewInvoiceService(repo ports.InvoiceRepository, pub ports.NotificationPubli
 }
 
 // CreateInvoice membuat invoice baru dari order dengan status awal pending
-func (s *InvoiceService) CreateInvoice(ctx context.Context, orderID string, amount float64, payerID string) (*domain.Invoice, error) {
+func (s *InvoiceService) CreateInvoice(ctx context.Context, orderID string, amount int64, payerID string) (*domain.Invoice, error) {
 	if amount < 0 {
 		return nil, ErrInvalidAmount
 	}
 
 	invoice := &domain.Invoice{
-		ID:           fmt.Sprintf("INV-%s-%d", orderID, s.now().Unix()),
-		OrderID:      orderID,
-		Amount:       amount,
-		FinalPayerID: payerID,
-		Status:       domain.StatusPending,
-		ReceiptURL:   fmt.Sprintf("https://invoice.felo.app/%s", orderID),
-		CreatedAt:    s.now(),
-		UpdatedAt:    s.now(),
+		InvoiceID:  fmt.Sprintf("INV-%s-%d", orderID, s.now().Unix()),
+		SubjectRef: orderID,
+		CustomerID: payerID,
+		Amount:     amount,
+		Currency:   "IDR",
+		Status:     domain.StatusIssued,
 	}
 
 	if err := s.repo.Create(ctx, invoice); err != nil {
@@ -58,9 +56,9 @@ func (s *InvoiceService) GetInvoice(ctx context.Context, id string) (*domain.Inv
 	return s.repo.GetByID(ctx, id)
 }
 
-// GetInvoicesByOrderID mengambil semua tagihan yang berkaitan dengan satu pesanan
-func (s *InvoiceService) GetInvoicesByOrderID(ctx context.Context, orderID string) ([]domain.Invoice, error) {
-	return s.repo.GetByOrderID(ctx, orderID)
+// GetInvoicesBySubjectRef mengambil semua tagihan yang berkaitan dengan satu pesanan
+func (s *InvoiceService) GetInvoicesBySubjectRef(ctx context.Context, subjectRef string) ([]domain.Invoice, error) {
+	return s.repo.GetByOrderID(ctx, subjectRef)
 }
 
 // UpdateInvoiceStatus memperbarui status pembayaran tagihan
@@ -69,10 +67,7 @@ func (s *InvoiceService) UpdateInvoiceStatus(ctx context.Context, id string, sta
 	return s.repo.UpdateStatus(ctx, id, status)
 }
 
-// SetPaymentReference menyimpan nomor referensi dari payment gateway/wallet
-func (s *InvoiceService) SetPaymentReference(ctx context.Context, id string, reference string) error {
-	return s.repo.UpdatePaymentReference(ctx, id, reference)
-}
+
 
 // SendInvoiceNotification memicu pengiriman notifikasi/nota digital ke user
 func (s *InvoiceService) SendInvoiceNotification(ctx context.Context, id string) error {
