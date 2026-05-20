@@ -95,12 +95,7 @@ services:
       POSTGRES_PASSWORD: felo
       POSTGRES_DB: order_db
     ports:
-      - "54326:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U felo -d order_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
+      - "54333:5432"
 
   postgres-cart:
     image: postgres:16
@@ -110,12 +105,7 @@ services:
       POSTGRES_PASSWORD: felo
       POSTGRES_DB: cart_db
     ports:
-      - "54327:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U felo -d cart_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
+      - "54334:5432"
 
   postgres-sendorder:
     image: postgres:16
@@ -125,12 +115,7 @@ services:
       POSTGRES_PASSWORD: felo
       POSTGRES_DB: sendorder_db
     ports:
-      - "54328:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U felo -d sendorder_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
+      - "54335:5432"
 
   postgres-shipment:
     image: postgres:16
@@ -140,7 +125,7 @@ services:
       POSTGRES_PASSWORD: felo
       POSTGRES_DB: shipment_db
     ports:
-      - "54329:5432"
+      - "54336:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U felo -d shipment_db"]
       interval: 5s

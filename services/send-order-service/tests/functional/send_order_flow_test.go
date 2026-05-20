@@ -14,7 +14,7 @@ import (
 
 func TestSendOrderFunctional_CreateSendOrder_PersistsToDatabase(t *testing.T) {
 	ctx := context.Background()
-	db := openSendOrderPG(t, getenv("FELO_SENDORDER_PG_DSN", "postgres://felo:felo@127.0.0.1:54328/sendorder_db?sslmode=disable"))
+	db := openSendOrderPG(t, getenv("FELO_SENDORDER_PG_DSN", "postgres://felo:felo@127.0.0.1:54335/sendorder_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
 	initSendOrderTables(t, db)

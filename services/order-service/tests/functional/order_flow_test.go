@@ -14,7 +14,7 @@ import (
 
 func TestOrderFunctional_CreateOrderWallet_PersistsConfirmedOrder(t *testing.T) {
 	ctx := context.Background()
-	db := openOrderPG(t, getenv("FELO_ORDER_PG_DSN", "postgres://felo:felo@127.0.0.1:54326/order_db?sslmode=disable"))
+	db := openOrderPG(t, getenv("FELO_ORDER_PG_DSN", "postgres://felo:felo@127.0.0.1:54333/order_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
 	initOrderTables(t, db)
@@ -53,7 +53,7 @@ func TestOrderFunctional_CreateOrderWallet_PersistsConfirmedOrder(t *testing.T) 
 
 func TestOrderFunctional_CreateOrderCash_PersistsPendingOrder(t *testing.T) {
 	ctx := context.Background()
-	db := openOrderPG(t, getenv("FELO_ORDER_PG_DSN", "postgres://felo:felo@127.0.0.1:54326/order_db?sslmode=disable"))
+	db := openOrderPG(t, getenv("FELO_ORDER_PG_DSN", "postgres://felo:felo@127.0.0.1:54333/order_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
 	initOrderTables(t, db)

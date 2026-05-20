@@ -15,7 +15,7 @@ import (
 
 func TestShipmentFunctional_PickupShipment_PersistsDriverAndStatus(t *testing.T) {
 	ctx := context.Background()
-	db := openShipmentPG(t, getenv("FELO_SHIPMENT_PG_DSN", "postgres://felo:felo@127.0.0.1:54329/shipment_db?sslmode=disable"))
+	db := openShipmentPG(t, getenv("FELO_SHIPMENT_PG_DSN", "postgres://felo:felo@127.0.0.1:54336/shipment_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
 	initShipmentTables(t, db)
@@ -43,7 +43,7 @@ func TestShipmentFunctional_PickupShipment_PersistsDriverAndStatus(t *testing.T)
 
 func TestShipmentFunctional_DeliverShipment_UpdatesStatusToDelivered(t *testing.T) {
 	ctx := context.Background()
-	db := openShipmentPG(t, getenv("FELO_SHIPMENT_PG_DSN", "postgres://felo:felo@127.0.0.1:54329/shipment_db?sslmode=disable"))
+	db := openShipmentPG(t, getenv("FELO_SHIPMENT_PG_DSN", "postgres://felo:felo@127.0.0.1:54336/shipment_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
 	initShipmentTables(t, db)

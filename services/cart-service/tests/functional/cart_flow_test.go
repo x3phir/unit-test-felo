@@ -15,7 +15,7 @@ import (
 
 func TestCartFunctional_AddItem_PersistsCartAndItemToDatabase(t *testing.T) {
 	ctx := context.Background()
-	db := openCartPG(t, getenv("FELO_CART_PG_DSN", "postgres://felo:felo@127.0.0.1:54327/cart_db?sslmode=disable"))
+	db := openCartPG(t, getenv("FELO_CART_PG_DSN", "postgres://felo:felo@127.0.0.1:54334/cart_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
 	initCartTables(t, db)
@@ -56,7 +56,7 @@ func TestCartFunctional_AddItem_PersistsCartAndItemToDatabase(t *testing.T) {
 
 func TestCartFunctional_ClearCart_RemovesCartAndItems(t *testing.T) {
 	ctx := context.Background()
-	db := openCartPG(t, getenv("FELO_CART_PG_DSN", "postgres://felo:felo@127.0.0.1:54327/cart_db?sslmode=disable"))
+	db := openCartPG(t, getenv("FELO_CART_PG_DSN", "postgres://felo:felo@127.0.0.1:54334/cart_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
 	initCartTables(t, db)
