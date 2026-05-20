@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type NotificationChannel string
 
 const (
@@ -18,4 +20,13 @@ type NotificationRequest struct {
 type DeliveryStatus struct {
 	Status  string // Sent/Delivered/Failed
 	Channel NotificationChannel
+}
+
+type NotificationRecord struct {
+	NotificationID string
+	RecipientRef   string
+	Channel        NotificationChannel
+	TemplateCode   string
+	Status         string
+	CreatedAt      time.Time
 }
