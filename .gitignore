@@ -12,7 +12,8 @@ dist/
 *.md
 !README.md
 !guide.md
-docs/
+/docs/
 services/*/README.md
-services/*/docs/
+services/*/docs/*
+!services/*/docs/erd.md
 tests/e2e/README.md
