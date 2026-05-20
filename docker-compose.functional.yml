@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   postgres-ride:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-ride
     environment:
       POSTGRES_USER: felo
@@ -17,7 +17,7 @@ services:
       retries: 20
 
   postgres-matching:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-matching
     environment:
       POSTGRES_USER: felo
@@ -47,7 +47,7 @@ services:
       retries: 20
 
   postgres-payment:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-payment
     environment:
       POSTGRES_USER: felo
@@ -77,7 +77,7 @@ services:
       retries: 20
 
   postgres-location:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-location
     environment:
       POSTGRES_USER: felo
@@ -92,7 +92,7 @@ services:
       retries: 20
 
   postgres-auth:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-auth
     environment:
       POSTGRES_USER: felo
@@ -107,7 +107,7 @@ services:
       retries: 20
 
   postgres-user:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-user
     environment:
       POSTGRES_USER: felo
@@ -122,7 +122,7 @@ services:
       retries: 20
 
   postgres-driver:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-driver
     environment:
       POSTGRES_USER: felo
@@ -137,7 +137,7 @@ services:
       retries: 20
 
   postgres-feedback:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-feedback
     environment:
       POSTGRES_USER: felo
@@ -163,7 +163,7 @@ services:
       retries: 20
 
   postgres-order:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-order
     environment:
       POSTGRES_USER: felo
@@ -173,7 +173,7 @@ services:
       - "54333:5432"
 
   postgres-cart:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-cart
     environment:
       POSTGRES_USER: felo
@@ -183,7 +183,7 @@ services:
       - "54334:5432"
 
   postgres-sendorder:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-sendorder
     environment:
       POSTGRES_USER: felo
@@ -193,7 +193,7 @@ services:
       - "54335:5432"
 
   postgres-shipment:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-shipment
     environment:
       POSTGRES_USER: felo
@@ -222,7 +222,7 @@ services:
       timeout: 10s
       retries: 20
   postgres-invoice:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-invoice
     environment:
       POSTGRES_USER: felo
@@ -237,7 +237,7 @@ services:
       retries: 20
 
   postgres-merchant:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-merchant
     environment:
       POSTGRES_USER: felo
@@ -252,7 +252,7 @@ services:
       retries: 20
 
   postgres-notification:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: felo-postgres-notification
     environment:
       POSTGRES_USER: felo

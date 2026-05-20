@@ -18,6 +18,8 @@ func TestRideFunctional_RequestRide_PersistsTripToDatabase(t *testing.T) {
 	db := openPG(t, getenv("FELO_RIDE_PG_DSN", "postgres://felo:felo@127.0.0.1:54321/ride_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
+	initRideTables(t, db)
+
 	rideID := "ride-ft-001"
 	_, _ = db.Exec(ctx, "delete from rides where id=$1", rideID)
 
@@ -87,6 +89,30 @@ func (c functionalClock) Now() time.Time { return c.now }
 
 type fixedRideIDs struct{ ids []string; idx int }
 func (g *fixedRideIDs) NewID() string { id := g.ids[g.idx]; g.idx++; return id }
+
+func initRideTables(t *testing.T, db *pgxpool.Pool) {
+	t.Helper()
+	ctx := context.Background()
+	_, err := db.Exec(ctx, `create table if not exists rides (
+		id text primary key,
+		customer_id text not null,
+		driver_id text not null default '',
+		pickup_lat double precision not null,
+		pickup_lng double precision not null,
+		dest_lat double precision not null,
+		dest_lng double precision not null,
+		fare bigint not null,
+		state text not null,
+		qr_code text not null default '',
+		qr_expires_at timestamptz,
+		qr_locked_driver text not null default '',
+		created_at timestamptz not null,
+		updated_at timestamptz not null
+	)`)
+	if err != nil {
+		t.Fatalf("initRideTables: %v", err)
+	}
+}
 
 func openPG(t *testing.T, dsn string) *pgxpool.Pool {
 	t.Helper()

@@ -18,6 +18,8 @@ func TestLocationFunctional_StoreAndQueryHistory_UsesDatabase(t *testing.T) {
 	db := openLocationPG(t, getenv("FELO_LOCATION_PG_DSN", "postgres://felo:felo@127.0.0.1:54325/location_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
+	initLocationTables(t, db)
+
 	recordedAt := time.Now().UTC().Truncate(time.Second)
 	_, _ = db.Exec(ctx, "delete from driver_locations where driver_id=$1 and recorded_at=$2", "driver-ft-001", recordedAt)
 
@@ -77,6 +79,21 @@ func (noopLatestCache) GetLatest(context.Context, string) (domain.LocationSample
 
 type noopRouter struct{}
 func (noopRouter) Estimate(context.Context, domain.RouteRequest) (domain.RouteEstimate, error) { return domain.RouteEstimate{}, nil }
+
+func initLocationTables(t *testing.T, db *pgxpool.Pool) {
+	t.Helper()
+	ctx := context.Background()
+	_, err := db.Exec(ctx, `create table if not exists driver_locations (
+		id bigserial primary key,
+		driver_id text not null,
+		lat double precision not null,
+		lng double precision not null,
+		recorded_at timestamptz not null
+	)`)
+	if err != nil {
+		t.Fatalf("initLocationTables: %v", err)
+	}
+}
 
 func openLocationPG(t *testing.T, dsn string) *pgxpool.Pool {
 	t.Helper()

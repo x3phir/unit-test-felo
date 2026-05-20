@@ -17,8 +17,12 @@ func TestMatchingFunctional_AssignDriver_PersistsAssignmentToDatabase(t *testing
 	db := openMatchingPG(t, getenv("FELO_MATCHING_PG_DSN", "postgres://felo:felo@127.0.0.1:54322/matching_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
+	initMatchingTables(t, db)
+
 	rideID := "ride-ft-assign-001"
 	_, _ = db.Exec(ctx, "delete from assignments where ride_id=$1", rideID)
+	_, _ = db.Exec(ctx, "delete from drivers where id=$1", "driver-ft-assign-001")
+	_, _ = db.Exec(ctx, "insert into drivers (id, status, lat, lng) values ('driver-ft-assign-001','available',-6.200,106.816)")
 
 	svc := service.NewMatchingService(&pgAvailability{db: db}, &pgAssignments{db: db}, noopMatchPublisher{})
 	assignment, err := svc.AssignDriver(ctx, domain.MatchRequest{
@@ -67,6 +71,28 @@ on conflict (ride_id) do update set driver_id=excluded.driver_id, assigned_at=ex
 
 type noopMatchPublisher struct{}
 func (noopMatchPublisher) Publish(context.Context, domain.Event) error { return nil }
+
+func initMatchingTables(t *testing.T, db *pgxpool.Pool) {
+	t.Helper()
+	ctx := context.Background()
+	_, err := db.Exec(ctx, `create table if not exists drivers (
+		id text primary key,
+		status text not null,
+		lat double precision not null,
+		lng double precision not null
+	)`)
+	if err != nil {
+		t.Fatalf("initMatchingTables drivers: %v", err)
+	}
+	_, err = db.Exec(ctx, `create table if not exists assignments (
+		ride_id text primary key,
+		driver_id text not null,
+		assigned_at timestamptz not null
+	)`)
+	if err != nil {
+		t.Fatalf("initMatchingTables assignments: %v", err)
+	}
+}
 
 func openMatchingPG(t *testing.T, dsn string) *pgxpool.Pool {
 	t.Helper()
