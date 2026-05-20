@@ -1,0 +1,152 @@
+version: "3.9"
+
+services:
+  postgres-ride:
+    image: postgres:16
+    container_name: felo-postgres-ride
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: ride_db
+    ports:
+      - "54321:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d ride_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-matching:
+    image: postgres:16
+    container_name: felo-postgres-matching
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: matching_db
+    ports:
+      - "54322:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d matching_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-wallet:
+    image: postgres:16
+    container_name: felo-postgres-wallet
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: wallet_db
+    ports:
+      - "54323:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d wallet_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-payment:
+    image: postgres:16
+    container_name: felo-postgres-payment
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: payment_db
+    ports:
+      - "54324:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d payment_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-location:
+    image: postgres:16
+    container_name: felo-postgres-location
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: location_db
+    ports:
+      - "54325:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d location_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7
+    container_name: felo-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: felo-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: felo
+      RABBITMQ_DEFAULT_PASS: felo
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  postgres-invoice:
+    image: postgres:16
+    container_name: felo-postgres-invoice
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: invoice_db
+    ports:
+      - "54326:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d invoice_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-merchant:
+    image: postgres:16
+    container_name: felo-postgres-merchant
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: merchant_db
+    ports:
+      - "54327:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d merchant_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-notification:
+    image: postgres:16
+    container_name: felo-postgres-notification
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: notification_db
+    ports:
+      - "54328:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d notification_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+networks:
+  default:
+    name: felo-functional-net
