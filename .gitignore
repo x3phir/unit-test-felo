@@ -9,3 +9,10 @@ dist/
 *.out
 .idea/
 .vscode/
+*.md
+!README.md
+!guide.md
+docs/
+services/*/README.md
+services/*/docs/
+tests/e2e/README.md
