@@ -11,6 +11,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.11.0 // indirect
 	github.com/redis/go-redis/v9 v9.19.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
+	go.uber.org/mock v0.6.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect

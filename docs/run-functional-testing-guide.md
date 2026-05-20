@@ -2,21 +2,18 @@
 
 ## Overview
 
-Functional tests are intended for end-to-end and cross-service validation using:
+E2E tests are intended for end-to-end and cross-service validation using:
 
 - real `PostgreSQL`
 - real `Redis`
 - real `RabbitMQ`
 - real `gRPC` service endpoints
 
-These tests are separate from unit tests and use the `functional` build tag.
+These tests are separate from unit tests and use the `e2e` build tag.
 
 ## Current Status
 
-The infrastructure and test harness are scaffolded now.
-The actual FELO service implementations do not exist yet in this repository, so the functional tests currently skip until real gRPC adapters are connected.
-
-That is expected.
+The repository now provides a runnable local demo runtime plus root-level E2E scenarios in `tests/e2e`.
 
 ## Working Directory
 
@@ -56,9 +53,9 @@ go run .\cmd\felo-seed
 
 Seeder source:
 
-- `functional/testdata/seeds/customers.json`
-- `functional/testdata/seeds/drivers.json`
-- `functional/testdata/seeds/locations.json`
+- `tests/e2e/testdata/seeds/customers.json`
+- `tests/e2e/testdata/seeds/drivers.json`
+- `tests/e2e/testdata/seeds/locations.json`
 
 ## 1B. Start Real FELO gRPC Demo Services
 
@@ -88,8 +85,8 @@ docker compose -f .\docker-compose.functional.yml ps
 Functional tests are guarded by environment variables so they do not run accidentally.
 
 ```powershell
-$env:FELO_FUNCTIONAL_ENABLED='1'
-$env:FELO_TEST_SUITE='smoke'
+$env:FELO_E2E_ENABLED='1'
+$env:FELO_E2E_SUITE='smoke'
 $env:FELO_AUTH_JWT='demo-functional-token'
 ```
 
@@ -102,13 +99,13 @@ Available suite values:
 ## 4. Run Functional Tests
 
 ```powershell
-go test -tags=functional ./functional/...
+go test -tags=e2e ./tests/e2e/...
 ```
 
 Verbose mode:
 
 ```powershell
-go test -v -tags=functional ./functional/...
+go test -v -tags=e2e ./tests/e2e/...
 ```
 
 ## 5. Run One Suite Category
@@ -116,28 +113,28 @@ go test -v -tags=functional ./functional/...
 Smoke:
 
 ```powershell
-$env:FELO_TEST_SUITE='smoke'
-go test -v -tags=functional ./functional/...
+$env:FELO_E2E_SUITE='smoke'
+go test -v -tags=e2e ./tests/e2e/...
 ```
 
 Critical flow:
 
 ```powershell
-$env:FELO_TEST_SUITE='critical-flow'
-go test -v -tags=functional ./functional/...
+$env:FELO_E2E_SUITE='critical-flow'
+go test -v -tags=e2e ./tests/e2e/...
 ```
 
 Full regression:
 
 ```powershell
-$env:FELO_TEST_SUITE='full-regression'
-go test -v -tags=functional ./functional/...
+$env:FELO_E2E_SUITE='full-regression'
+go test -v -tags=e2e ./tests/e2e/...
 ```
 
 ## 6. Run with JUnit Output
 
 ```powershell
-go test -json -tags=functional ./functional/... | Tee-Object -FilePath 'functional-gotest.json'
+go test -json -tags=e2e ./tests/e2e/... | Tee-Object -FilePath 'functional-gotest.json'
 Get-Content -LiteralPath 'functional-gotest.json' | go run ./tools/gotest2junit | Set-Content 'functional-junit.xml'
 ```
 
@@ -155,7 +152,7 @@ docker compose -f .\docker-compose.functional.yml down -v
 
 ## 8. Required Environment Variables for Real Adapter Wiring
 
-These are the endpoint variables the harness expects:
+These are the endpoint variables the E2E harness expects:
 
 ```text
 FELO_RIDE_GRPC_ADDR
@@ -179,7 +176,7 @@ $env:FELO_AUTH_JWT='replace-with-valid-test-jwt'
 
 ## 9. Seed Data
 
-Fixtures live under `functional/testdata/`.
+Fixtures live under `tests/e2e/testdata/`.
 They define deterministic IDs for:
 
 - customers
@@ -192,8 +189,8 @@ They define deterministic IDs for:
 
 At the current runnable demo stage:
 
-1. functional tests compile
+1. e2e tests compile
 2. infrastructure can be started with Docker
 3. databases can be seeded with `go run .\cmd\felo-seed`
 4. gRPC demo services can be started with `go run .\cmd\felo-demo`
-5. functional tests run against real local endpoints
+5. e2e tests run against real local endpoints

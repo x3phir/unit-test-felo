@@ -50,7 +50,7 @@ Three categories are used in CI and local execution:
 - Every test case uses seeded data with explicit IDs.
 - RabbitMQ assertions are first-class pass criteria.
 - Time-bounded eventual assertions are required for async workflows.
-- Functional tests are separate from unit tests and must use the `functional` build tag.
+- E2E tests are separate from unit tests and must use the `e2e` build tag.
 
 ## Core Scenarios
 
@@ -97,15 +97,15 @@ Functional tests depend on stable seeded fixtures:
 
 ## Execution Model
 
-Functional tests will eventually run against real service containers, but the current repository does not yet contain production gRPC servers. Because of that, the current scaffold provides:
+E2E tests run from the root folder `tests/e2e` and target real local service endpoints. Service-local functional coverage stays under each service directory.
+
+The repository provides:
 
 - environment configuration
 - scenario definitions
 - readiness hooks
 - eventual assertion helpers
-- adapter interfaces for future gRPC clients
-
-Tests skip with a clear message until real adapters are wired in.
+- real gRPC demo runtime for local validation
 
 ## CI Strategy
 

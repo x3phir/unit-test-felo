@@ -7,8 +7,8 @@ pipeline {
 
     environment {
         COVERAGE_THRESHOLD = '70'
-        FELO_FUNCTIONAL_ENABLED = '0'
-        FELO_TEST_SUITE = 'critical-flow'
+        FELO_E2E_ENABLED = '0'
+        FELO_E2E_SUITE = 'critical-flow'
     }
 
     stages {
@@ -52,21 +52,21 @@ pipeline {
             }
         }
 
-        stage('Functional Test') {
+        stage('E2E Test') {
             when {
-                expression { return env.FELO_FUNCTIONAL_ENABLED == '1' }
+                expression { return env.FELO_E2E_ENABLED == '1' }
             }
             steps {
                 script {
                     if (isUnix()) {
                         sh """
-                            go test -json -tags=functional ./functional/... > functional-gotest.json
-                            go run ./tools/gotest2junit < functional-gotest.json > functional-junit.xml
+                            go test -json -tags=e2e ./tests/e2e/... > e2e-gotest.json
+                            go run ./tools/gotest2junit < e2e-gotest.json > e2e-junit.xml
                         """
                     } else {
                         powershell """
-                            go test -json -tags=functional ./functional/... | Tee-Object -FilePath 'functional-gotest.json'
-                            Get-Content -LiteralPath 'functional-gotest.json' | go run ./tools/gotest2junit | Set-Content 'functional-junit.xml'
+                            go test -json -tags=e2e ./tests/e2e/... | Tee-Object -FilePath 'e2e-gotest.json'
+                            Get-Content -LiteralPath 'e2e-gotest.json' | go run ./tools/gotest2junit | Set-Content 'e2e-junit.xml'
                         """
                     }
                 }
@@ -76,9 +76,9 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'coverage.out,coverage.html,gotest.json,junit.xml,functional-gotest.json,functional-junit.xml', fingerprint: true
+            archiveArtifacts artifacts: 'coverage.out,coverage.html,gotest.json,junit.xml,e2e-gotest.json,e2e-junit.xml', fingerprint: true
             junit testResults: 'junit.xml', allowEmptyResults: false
-            junit testResults: 'functional-junit.xml', allowEmptyResults: true
+            junit testResults: 'e2e-junit.xml', allowEmptyResults: true
         }
     }
 }

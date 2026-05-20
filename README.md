@@ -16,7 +16,8 @@ The initial scaffold focuses on the five highest-risk services from the PRD:
 
 The remaining services are tracked in [docs/service-roadmap.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\service-roadmap.md).
 How to run the tests is documented in [docs/run-testing-guide.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\run-testing-guide.md).
-Functional test design and execution are documented in [docs/functional-testing-strategy.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\functional-testing-strategy.md) and [docs/run-functional-testing-guide.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\run-functional-testing-guide.md).
+Global architecture and contracts live in [docs/global/architecture.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\global\architecture.md) and [docs/global/data-contracts.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\global\data-contracts.md).
+E2E test design and execution are documented in [docs/functional-testing-strategy.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\functional-testing-strategy.md) and [docs/run-functional-testing-guide.md](C:\Users\Harri Supriadi\Documents\unit-test-felo\docs\run-functional-testing-guide.md).
 
 ## Demo Runtime
 
@@ -32,10 +33,10 @@ go run .\cmd\felo-demo
 Then, in another terminal:
 
 ```powershell
-$env:FELO_FUNCTIONAL_ENABLED='1'
-$env:FELO_TEST_SUITE='critical-flow'
+$env:FELO_E2E_ENABLED='1'
+$env:FELO_E2E_SUITE='critical-flow'
 $env:FELO_AUTH_JWT='demo-functional-token'
-go test -v -tags=functional ./functional/...
+go test -v -tags=e2e ./tests/e2e/...
 ```
 
 ## Principles

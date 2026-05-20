@@ -20,8 +20,9 @@
 
 | Area | Status | Notes |
 |---|---|---|
-| Functional harness | Scaffolded | Uses build tag `functional` |
+| Service-level functional tests | Scaffolded | Live under `services/<service>/tests/functional` |
 | Docker infra | Scaffolded | PostgreSQL, Redis, RabbitMQ |
-| Smoke suite | Scaffolded | Waits for gRPC adapter wiring |
+| E2E harness | Scaffolded | Root-level `tests/e2e` with build tag `e2e` |
+| Smoke suite | Scaffolded | Cross-service reachability |
 | Critical-flow suite | Scaffolded | Regular ride and FELO-Now |
 | Full regression suite | Scaffolded | Includes negative flow placeholders |

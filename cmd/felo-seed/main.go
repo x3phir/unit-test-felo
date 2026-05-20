@@ -19,7 +19,7 @@ func main() {
 		log.Fatalf("create app: %v", err)
 	}
 
-	seedRoot := filepath.Join("functional", "testdata", "seeds")
+	seedRoot := filepath.Join("tests", "e2e", "testdata", "seeds")
 	if len(os.Args) > 1 {
 		seedRoot = os.Args[1]
 	}
