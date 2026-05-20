@@ -76,6 +76,66 @@ services:
       timeout: 5s
       retries: 20
 
+  postgres-auth:
+    image: postgres:16
+    container_name: felo-postgres-auth
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: auth_db
+    ports:
+      - "54329:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-user:
+    image: postgres:16
+    container_name: felo-postgres-user
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: user_db
+    ports:
+      - "54330:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d user_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-driver:
+    image: postgres:16
+    container_name: felo-postgres-driver
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: driver_db
+    ports:
+      - "54331:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d driver_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres-feedback:
+    image: postgres:16
+    container_name: felo-postgres-feedback
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: feedback_db
+    ports:
+      - "54332:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d feedback_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   redis:
     image: redis:7
     container_name: felo-redis
