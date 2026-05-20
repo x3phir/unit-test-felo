@@ -61,14 +61,15 @@ func TestCartFunctional_ClearCart_RemovesCartAndItems(t *testing.T) {
 
 	initCartTables(t, db)
 
-	cartID := "cart-ft-001"
+	userID := "user-ft-002"
+	cartID := "cart-" + userID
 	_, _ = db.Exec(ctx, "delete from cart_items where cart_id=$1", cartID)
 	_, _ = db.Exec(ctx, "delete from carts where cart_id=$1", cartID)
-	_, _ = db.Exec(ctx, "insert into carts (cart_id, customer_id, merchant_id, status, updated_at) values ($1,'user-ft-002','resto-ft-001','active',$2)",
-		cartID, time.Now().UTC())
+	_, _ = db.Exec(ctx, "insert into carts (cart_id, customer_id, merchant_id, status, updated_at) values ($1,$2,'resto-ft-001','active',$3)",
+		cartID, userID, time.Now().UTC())
 
 	svc := service.NewCartService(&pgCartRepo{db: db}, &noopCartMerchant{})
-	if err := svc.ClearCart(ctx, "user-ft-002"); err != nil {
+	if err := svc.ClearCart(ctx, userID); err != nil {
 		t.Fatalf("ClearCart() error = %v", err)
 	}
 
@@ -145,9 +146,8 @@ func (r *pgCartRepo) GetByUserID(ctx context.Context, userID string) (domain.Car
 }
 
 func (r *pgCartRepo) Delete(ctx context.Context, userID string) error {
-	cartID := "cart-" + userID
-	_, _ = r.db.Exec(ctx, "delete from cart_items where cart_id=$1", cartID)
-	_, err := r.db.Exec(ctx, "delete from carts where cart_id=$1", cartID)
+	_, _ = r.db.Exec(ctx, "delete from cart_items where cart_id in (select cart_id from carts where customer_id=$1)", userID)
+	_, err := r.db.Exec(ctx, "delete from carts where customer_id=$1", userID)
 	return err
 }
 

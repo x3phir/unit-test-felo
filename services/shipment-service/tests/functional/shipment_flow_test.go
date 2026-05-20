@@ -23,7 +23,7 @@ func TestShipmentFunctional_PickupShipment_PersistsDriverAndStatus(t *testing.T)
 	shipmentID := "ship-ft-001"
 	_, _ = db.Exec(ctx, "delete from shipments where shipment_id=$1", shipmentID)
 	_, _ = db.Exec(ctx, `insert into shipments (shipment_id, status, eta_minutes, updated_at)
-		values ($1,'packed',0,$2)`, shipmentID, time.Now().UTC())
+		values ($1,'created',0,$2)`, shipmentID, time.Now().UTC())
 
 	svc := service.NewShipmentService(&pgShipmentRepo{db: db}, &noopShipmentPublisher{})
 
@@ -51,7 +51,7 @@ func TestShipmentFunctional_DeliverShipment_UpdatesStatusToDelivered(t *testing.
 	shipmentID := "ship-ft-002"
 	_, _ = db.Exec(ctx, "delete from shipments where shipment_id=$1", shipmentID)
 	_, _ = db.Exec(ctx, `insert into shipments (shipment_id, driver_id, status, eta_minutes, updated_at)
-		values ($1,'driver-ft-001','packed',15,$2)`, shipmentID, time.Now().UTC())
+		values ($1,'driver-ft-001','picked_up',15,$2)`, shipmentID, time.Now().UTC())
 
 	svc := service.NewShipmentService(&pgShipmentRepo{db: db}, &noopShipmentPublisher{})
 
