@@ -39,7 +39,7 @@ func (s *MerchantService) GetMerchant(ctx context.Context, id string) (*domain.M
 }
 
 func (s *MerchantService) CreateMerchant(ctx context.Context, merchant *domain.Merchant) error {
-	merchant.CreatedAt = s.now()
+	merchant.UpdatedAt = s.now()
 	return s.merchantRepo.Create(ctx, merchant)
 }
 
@@ -53,16 +53,7 @@ func (s *MerchantService) IsMerchantOpen(ctx context.Context, id string) (bool, 
 		return false, err
 	}
 
-	if merchant.IsManuallyClosed {
-		return false, nil
-	}
-
-	currentTime := s.now().Format("15:04")
-	if currentTime >= merchant.OpenTime && currentTime <= merchant.CloseTime {
-		return true, nil
-	}
-
-	return false, nil
+	return merchant.Status == "active", nil
 }
 
 // ==========================================
