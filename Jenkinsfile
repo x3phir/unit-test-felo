@@ -77,9 +77,11 @@ pipeline {
         stage('Functional Test') {
             steps {
                 script {
-                    def composeCmd = isUnix() ? 'docker compose' : 'docker compose'
-
-                    sh "${composeCmd} -f ${COMPOSE_FILE} up -d --wait"
+                    if (isUnix()) {
+                        sh "docker compose -f ${COMPOSE_FILE} up -d --wait"
+                    } else {
+                        powershell "docker compose -f ${COMPOSE_FILE} up -d --wait"
+                    }
                 }
                 script {
                     if (isUnix()) {
@@ -98,8 +100,11 @@ pipeline {
             post {
                 always {
                     script {
-                        def composeCmd = isUnix() ? 'docker compose' : 'docker compose'
-                        sh "${composeCmd} -f ${COMPOSE_FILE} down"
+                        if (isUnix()) {
+                            sh "docker compose -f ${COMPOSE_FILE} down"
+                        } else {
+                            powershell "docker compose -f ${COMPOSE_FILE} down"
+                        }
                     }
                 }
             }
