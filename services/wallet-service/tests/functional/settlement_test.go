@@ -21,7 +21,8 @@ func TestWalletFunctional_ApplyRideSettlement_UpdatesWalletAndLedger(t *testing.
 
 	ref := "settlement-ft-001"
 	_, _ = db.Exec(ctx, "delete from wallet_ledger where reference=$1", ref)
-	_, _ = db.Exec(ctx, "update wallets set balance=$2, updated_at=$3 where owner_id=$1", "driver-active-001", 0, time.Now().UTC())
+	_, _ = db.Exec(ctx, "delete from wallet_ledger where owner_id=$1", "driver-active-001")
+	_, _ = db.Exec(ctx, "update wallets set balance=0, updated_at=now() where owner_id=$1", "driver-active-001")
 
 	svc := service.NewSettlementService(&pgSettlementStore{db: db}, &pgWalletStore{db: db})
 	record, err := svc.ApplyRideSettlement(ctx, domain.Settlement{

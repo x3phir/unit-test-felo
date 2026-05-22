@@ -7,20 +7,15 @@ pipeline {
 
     environment {
         COVERAGE_THRESHOLD = '70'
-        FELO_E2E_ENABLED = '0'
-        FELO_E2E_SUITE = 'critical-flow'
+        IMAGE_NAME = 'felo-backend'
+        IMAGE_TAG = "${env.BUILD_NUMBER ?: 'latest'}"
+        REGISTRY = 'docker.io/felo'
     }
 
     stages {
-        stage('Verify Toolchain') {
+        stage('Checkout') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'go version'
-                    } else {
-                        powershell 'go version'
-                    }
-                }
+                checkout scm
             }
         }
 
@@ -52,21 +47,84 @@ pipeline {
             }
         }
 
-        stage('E2E Test') {
-            when {
-                expression { return env.FELO_E2E_ENABLED == '1' }
+        stage('Lint/Vet') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'go vet ./...'
+                    } else {
+                        powershell 'go vet ./...'
+                    }
+                }
             }
+        }
+
+        stage('Build Image') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                    } else {
+                        powershell "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                    }
+                }
+            }
+        }
+
+        stage('Functional Test') {
             steps {
                 script {
                     if (isUnix()) {
                         sh """
-                            go test -json -tags=e2e ./tests/e2e/... > e2e-gotest.json
-                            go run ./tools/gotest2junit < e2e-gotest.json > e2e-junit.xml
+                            go test -json -tags=functional ./services/... > functional-gotest.json
+                            go run ./tools/gotest2junit < functional-gotest.json > functional-junit.xml
                         """
                     } else {
                         powershell """
-                            go test -json -tags=e2e ./tests/e2e/... | Tee-Object -FilePath 'e2e-gotest.json'
-                            Get-Content -LiteralPath 'e2e-gotest.json' | go run ./tools/gotest2junit | Set-Content 'e2e-junit.xml'
+                            go test -json -tags=functional ./services/... | Tee-Object -FilePath 'functional-gotest.json'
+                            Get-Content -LiteralPath 'functional-gotest.json' | go run ./tools/gotest2junit | Set-Content 'functional-junit.xml'
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    } else {
+                        powershell "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "kubectl set image deployment/felo-backend felo-backend=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} --record"
+                    } else {
+                        powershell "kubectl set image deployment/felo-backend felo-backend=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} --record"
+                    }
+                }
+            }
+        }
+
+        stage('Verify') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh """
+                            kubectl rollout status deployment/felo-backend
+                            kubectl get pods -l app=felo-backend
+                        """
+                    } else {
+                        powershell """
+                            kubectl rollout status deployment/felo-backend
+                            kubectl get pods -l app=felo-backend
                         """
                     }
                 }
@@ -76,9 +134,9 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'coverage.out,coverage.html,gotest.json,junit.xml,e2e-gotest.json,e2e-junit.xml', fingerprint: true
+            archiveArtifacts artifacts: 'coverage.out,coverage.html,gotest.json,junit.xml,functional-gotest.json,functional-junit.xml', fingerprint: true
             junit testResults: 'junit.xml', allowEmptyResults: false
-            junit testResults: 'e2e-junit.xml', allowEmptyResults: true
+            junit testResults: 'functional-junit.xml', allowEmptyResults: true
         }
     }
 }
