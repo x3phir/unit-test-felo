@@ -87,7 +87,12 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "docker ps -aq -f name=felo- | xargs -r docker rm -f 2>/dev/null; docker compose -f ${COMPOSE_FILE} up -d --force-recreate --remove-orphans && sleep 15"
+                        sh """
+                            docker ps -aq -f name=felo- | xargs -r docker rm -f 2>/dev/null
+                            docker compose -f ${COMPOSE_FILE} up -d --force-recreate --remove-orphans
+                            if [ -f /.dockerenv ]; then docker network connect felo-functional-net "\$(hostname)" 2>/dev/null || true; fi
+                            sleep 15
+                        """
                     } else {
                         powershell "docker ps -a -q -f name=felo- | ForEach-Object { docker rm -f \$_ >\$null 2>&1 }; docker compose -f ${COMPOSE_FILE} up -d --force-recreate --remove-orphans; Start-Sleep -Seconds 15"
                     }
@@ -95,6 +100,26 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh """
+                            if [ -f /.dockerenv ]; then
+                                export FELO_RIDE_PG_DSN='postgres://felo:felo@felo-postgres-ride:5432/ride_db?sslmode=disable'
+                                export FELO_MATCHING_PG_DSN='postgres://felo:felo@felo-postgres-matching:5432/matching_db?sslmode=disable'
+                                export FELO_LOCATION_PG_DSN='postgres://felo:felo@felo-postgres-location:5432/location_db?sslmode=disable'
+                                export FELO_INVOICE_PG_DSN='postgres://felo:felo@felo-postgres-invoice:5432/invoice_db?sslmode=disable'
+                                export FELO_MERCHANT_PG_DSN='postgres://felo:felo@felo-postgres-merchant:5432/merchant_db?sslmode=disable'
+                                export FELO_NOTIFICATION_PG_DSN='postgres://felo:felo@felo-postgres-notification:5432/notification_db?sslmode=disable'
+                                export FELO_AUTH_PG_DSN='postgres://felo:felo@felo-postgres-auth:5432/auth_db?sslmode=disable'
+                                export FELO_USER_PG_DSN='postgres://felo:felo@felo-postgres-user:5432/user_db?sslmode=disable'
+                                export FELO_DRIVER_PG_DSN='postgres://felo:felo@felo-postgres-driver:5432/driver_db?sslmode=disable'
+                                export FELO_FEEDBACK_PG_DSN='postgres://felo:felo@felo-postgres-feedback:5432/feedback_db?sslmode=disable'
+                                export FELO_ORDER_PG_DSN='postgres://felo:felo@felo-postgres-order:5432/order_db?sslmode=disable'
+                                export FELO_CART_PG_DSN='postgres://felo:felo@felo-postgres-cart:5432/cart_db?sslmode=disable'
+                                export FELO_SENDORDER_PG_DSN='postgres://felo:felo@felo-postgres-sendorder:5432/sendorder_db?sslmode=disable'
+                                export FELO_SHIPMENT_PG_DSN='postgres://felo:felo@felo-postgres-shipment:5432/shipment_db?sslmode=disable'
+                                export FELO_PRICING_PG_DSN='postgres://felo:felo@felo-postgres-pricing:5432/pricing_db?sslmode=disable'
+                                export FELO_PAYMENT_PG_DSN='postgres://felo:felo@felo-postgres-payment:5432/payment_db?sslmode=disable'
+                                export FELO_WALLET_PG_DSN='postgres://felo:felo@felo-postgres-wallet:5432/wallet_db?sslmode=disable'
+                                export FELO_TRACKING_PG_DSN='postgres://felo:felo@felo-postgres-tracking:5432/tracking_db?sslmode=disable'
+                            fi
                             go test -json -tags=functional ./services/... > functional-gotest.json
                             go run ./tools/gotest2junit < functional-gotest.json > functional-junit.xml
                         """
@@ -111,7 +136,10 @@ pipeline {
                 always {
                     script {
                         if (isUnix()) {
-                            sh "docker compose -f ${COMPOSE_FILE} down --remove-orphans"
+                            sh """
+                                if [ -f /.dockerenv ]; then docker network disconnect felo-functional-net "\$(hostname)" 2>/dev/null || true; fi
+                                docker compose -f ${COMPOSE_FILE} down --remove-orphans
+                            """
                         } else {
                             powershell "docker compose -f ${COMPOSE_FILE} down --remove-orphans"
                         }
