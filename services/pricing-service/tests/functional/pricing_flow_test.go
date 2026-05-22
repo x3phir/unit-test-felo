@@ -17,10 +17,12 @@ func TestPricingFunctional_CalculateEstimate_ReturnsCorrectFare(t *testing.T) {
 	ctx := context.Background()
 	db := openPricingPG(t, getenv("FELO_PRICING_PG_DSN", "postgres://felo:felo@127.0.0.1:54337/pricing_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
+	initPricingTables(t, db)
+	seedPricingRule(t, db)
 
 	audit := &memFareAudit{entries: map[string]domain.FareAuditEntry{}}
 	svc := service.NewPricingService(
-		&fixedPricingConfig{},
+		&pgPricingConfig{db: db},
 		audit,
 		functionalPricingClock{now: time.Date(2026, 5, 1, 10, 0, 0, 0, time.UTC)},
 	)
@@ -46,6 +48,8 @@ func TestPricingFunctional_CalculateFinalFare_ReadsExistingAudit(t *testing.T) {
 	ctx := context.Background()
 	db := openPricingPG(t, getenv("FELO_PRICING_PG_DSN", "postgres://felo:felo@127.0.0.1:54337/pricing_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
+	initPricingTables(t, db)
+	seedPricingRule(t, db)
 
 	audit := &memFareAudit{entries: map[string]domain.FareAuditEntry{}}
 	audit.entries["pricing-ft-002"] = domain.FareAuditEntry{
@@ -59,7 +63,7 @@ func TestPricingFunctional_CalculateFinalFare_ReadsExistingAudit(t *testing.T) {
 	}
 
 	svc := service.NewPricingService(
-		&fixedPricingConfig{},
+		&pgPricingConfig{db: db},
 		audit,
 		functionalPricingClock{now: time.Date(2026, 5, 1, 10, 0, 0, 0, time.UTC)},
 	)
@@ -92,13 +96,23 @@ func (m *memFareAudit) GetByTripID(_ context.Context, tripID string) (domain.Far
 	return entry, ok, nil
 }
 
-type fixedPricingConfig struct{}
+type pgPricingConfig struct{ db *pgxpool.Pool }
 
-func (fixedPricingConfig) GetSurgeConfig(_ context.Context) (domain.SurgeConfig, error) {
+func (c *pgPricingConfig) GetSurgeConfig(ctx context.Context) (domain.SurgeConfig, error) {
+	var baseFarePerKM int64
+	var maxMultiplier float64
+	err := c.db.QueryRow(ctx, `select base_fare, surge_multiplier
+from pricing_rules
+where service_type='ride'
+order by active_from desc
+limit 1`).Scan(&baseFarePerKM, &maxMultiplier)
+	if err != nil {
+		return domain.SurgeConfig{}, err
+	}
 	return domain.SurgeConfig{
 		DemandSupplyThreshold: 1.5,
-		MaxMultiplier:         3.0,
-		BaseFarePerKM:         2500,
+		MaxMultiplier:         maxMultiplier,
+		BaseFarePerKM:         baseFarePerKM,
 		BaseFarePerMinute:     500,
 		MinimumFare:           7000,
 	}, nil
@@ -107,6 +121,38 @@ func (fixedPricingConfig) GetSurgeConfig(_ context.Context) (domain.SurgeConfig,
 type functionalPricingClock struct{ now time.Time }
 
 func (c functionalPricingClock) Now() time.Time { return c.now }
+
+func initPricingTables(t *testing.T, db *pgxpool.Pool) {
+	t.Helper()
+	ctx := context.Background()
+	_, err := db.Exec(ctx, `create table if not exists pricing_rules (
+		rule_id text primary key,
+		service_type text not null,
+		base_fare bigint not null,
+		surge_multiplier numeric not null,
+		active_from timestamptz not null,
+		active_to timestamptz not null
+	)`)
+	if err != nil {
+		t.Fatalf("initPricingTables: %v", err)
+	}
+}
+
+func seedPricingRule(t *testing.T, db *pgxpool.Pool) {
+	t.Helper()
+	ctx := context.Background()
+	_, err := db.Exec(ctx, `insert into pricing_rules (rule_id, service_type, base_fare, surge_multiplier, active_from, active_to)
+values ('pricing-rule-ft-ride','ride',2500,3.0,$1,$2)
+on conflict (rule_id) do update set
+service_type=excluded.service_type,
+base_fare=excluded.base_fare,
+surge_multiplier=excluded.surge_multiplier,
+active_from=excluded.active_from,
+active_to=excluded.active_to`, time.Now().UTC().Add(-time.Hour), time.Now().UTC().Add(time.Hour))
+	if err != nil {
+		t.Fatalf("seedPricingRule: %v", err)
+	}
+}
 
 func openPricingPG(t *testing.T, dsn string) *pgxpool.Pool {
 	t.Helper()

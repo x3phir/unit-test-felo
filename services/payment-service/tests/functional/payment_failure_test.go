@@ -19,6 +19,8 @@ func TestPaymentFunctional_HandleRideCompleted_PersistsProcessedPayment(t *testi
 	db := openPaymentPG(t, getenv("FELO_PAYMENT_PG_DSN", "postgres://felo:felo@127.0.0.1:54338/payment_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
+	initPaymentTables(t, db)
+
 	eventID := "evt-ft-001"
 	_, _ = db.Exec(ctx, "delete from payments where event_id=$1", eventID)
 
@@ -39,12 +41,17 @@ func TestPaymentFunctional_HandleRideCompleted_PersistsProcessedPayment(t *testi
 }
 
 type noopWalletClient struct{}
+
 func (noopWalletClient) DebitCustomer(context.Context, string, int64, string) error { return nil }
 
 type noopInvoiceClient struct{}
-func (noopInvoiceClient) IssueRideInvoice(context.Context, string, string, int64, string) (string, error) { return "inv-ft-001", nil }
+
+func (noopInvoiceClient) IssueRideInvoice(context.Context, string, string, int64, string) (string, error) {
+	return "inv-ft-001", nil
+}
 
 type pgProcessedStore struct{ db *pgxpool.Pool }
+
 func (s *pgProcessedStore) Get(ctx context.Context, eventID string) (domain.PaymentResult, bool, error) {
 	var result domain.PaymentResult
 	err := s.db.QueryRow(ctx, "select event_id, ride_id, created_at from payments where event_id=$1", eventID).Scan(&result.EventID, &result.TripID, &result.PaidAt)
@@ -60,6 +67,7 @@ func (s *pgProcessedStore) Save(ctx context.Context, result domain.PaymentResult
 }
 
 type noopPaymentPublisher struct{}
+
 func (noopPaymentPublisher) Publish(context.Context, domain.Event) error { return nil }
 
 func openPaymentPG(t *testing.T, dsn string) *pgxpool.Pool {
