@@ -5,11 +5,18 @@ pipeline {
         timestamps()
     }
 
+    parameters {
+        string(name: 'DOCKERHUB_NAMESPACE', defaultValue: 'piipapoy', description: 'Docker Hub username or organization namespace for image push')
+        string(name: 'DOCKER_IMAGE_NAME', defaultValue: 'felo-backend', description: 'Docker image repository name')
+        string(name: 'DOCKER_CREDENTIAL_ID', defaultValue: 'dockerhub-login', description: 'Jenkins username/password credential ID for Docker Hub')
+        booleanParam(name: 'RUN_PUSH_IMAGE', defaultValue: true, description: 'Push the Docker image to Docker Hub')
+        booleanParam(name: 'RUN_DEPLOY', defaultValue: false, description: 'Run Kubernetes deploy and rollout verification')
+    }
+
     environment {
         COVERAGE_THRESHOLD = '70'
-        IMAGE_NAME = 'felo-backend'
         IMAGE_TAG = "${env.BUILD_NUMBER ?: 'latest'}"
-        REGISTRY = 'docker.io/harrskrt'
+        DOCKER_REGISTRY = 'docker.io'
         COMPOSE_FILE = 'docker-compose.functional.yml'
         FELO_AUTH_JWT = 'demo-functional-token'
         KUBECONFIG = 'C:\\Users\\Harri Supriadi\\.kube\\config'
@@ -74,10 +81,17 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
+                    def dockerNamespace = params.DOCKERHUB_NAMESPACE.trim()
+                    def dockerImageName = params.DOCKER_IMAGE_NAME.trim()
+                    if (!dockerNamespace || !dockerImageName) {
+                        error('DOCKERHUB_NAMESPACE and DOCKER_IMAGE_NAME are required')
+                    }
+                    def imageRef = "${DOCKER_REGISTRY}/${dockerNamespace}/${dockerImageName}:${IMAGE_TAG}"
+
                     if (isUnix()) {
-                        sh "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                        sh "docker build -t ${imageRef} ."
                     } else {
-                        powershell "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                        powershell "docker build -t ${imageRef} ."
                     }
                 }
             }
@@ -149,16 +163,29 @@ pipeline {
         }
 
         stage('Push Image') {
+            when {
+                expression { params.RUN_PUSH_IMAGE }
+            }
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-login',
+                    credentialsId: params.DOCKER_CREDENTIAL_ID,
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     script {
+                        def dockerNamespace = params.DOCKERHUB_NAMESPACE.trim()
+                        def dockerImageName = params.DOCKER_IMAGE_NAME.trim()
+                        if (!dockerNamespace || !dockerImageName) {
+                            error('DOCKERHUB_NAMESPACE and DOCKER_IMAGE_NAME are required')
+                        }
+                        def imageRef = "${DOCKER_REGISTRY}/${dockerNamespace}/${dockerImageName}:${IMAGE_TAG}"
+
                         if (isUnix()) {
                             retry(2) {
-                                sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} && docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                                sh """
+                                    printf '%s' "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER" --password-stdin
+                                    docker push ${imageRef}
+                                """
                             }
                         } else {
                             retry(2) {
@@ -168,7 +195,7 @@ pipeline {
                                     New-Item -ItemType Directory -Path \$dockerDir -Force | Out-Null
                                     \$auth = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('${DOCKER_USER}:${DOCKER_PASS}'))
                                     '{"auths":{"https://index.docker.io/v1/":{"auth":"' + \$auth + '"}}}' | Set-Content -Path (Join-Path \$dockerDir 'config.json') -Encoding ascii
-                                    docker --config \$dockerDir push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                                    docker --config \$dockerDir push ${imageRef}
                                     Remove-Item -Path \$dockerDir -Recurse -Force -ErrorAction SilentlyContinue
                                 """
                             }
@@ -179,19 +206,29 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                expression { params.RUN_DEPLOY }
+            }
             steps {
                 script {
+                    def dockerNamespace = params.DOCKERHUB_NAMESPACE.trim()
+                    def dockerImageName = params.DOCKER_IMAGE_NAME.trim()
+                    if (!dockerNamespace || !dockerImageName) {
+                        error('DOCKERHUB_NAMESPACE and DOCKER_IMAGE_NAME are required')
+                    }
+                    def imageRef = "${DOCKER_REGISTRY}/${dockerNamespace}/${dockerImageName}:${IMAGE_TAG}"
+
                     if (isUnix()) {
                         sh """
                             minikube status || minikube start --driver=docker
-                            kubectl set image deployment/felo-backend felo-backend=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} --record
+                            kubectl set image deployment/felo-backend felo-backend=${imageRef} --record
                         """
                     } else {
                         powershell """
                             \$env:PATH = \"C:\\tools;\" + \$env:PATH
                             minikube status 2>&1 | Out-Null
                             if (\$LASTEXITCODE -ne 0) { minikube start --driver=docker }
-                            kubectl set image deployment/felo-backend felo-backend=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} --record
+                            kubectl set image deployment/felo-backend felo-backend=${imageRef} --record
                         """
                     }
                 }
@@ -199,6 +236,9 @@ pipeline {
         }
 
         stage('Verify') {
+            when {
+                expression { params.RUN_DEPLOY }
+            }
             steps {
                 script {
                     if (isUnix()) {
