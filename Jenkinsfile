@@ -10,6 +10,8 @@ pipeline {
         IMAGE_NAME = 'felo-backend'
         IMAGE_TAG = "${env.BUILD_NUMBER ?: 'latest'}"
         REGISTRY = 'docker.io/harrskrt'
+        COMPOSE_FILE = 'docker-compose.functional.yml'
+        FELO_AUTH_JWT = 'demo-functional-token'
     }
 
     stages {
@@ -74,6 +76,11 @@ pipeline {
         stage('Functional Test') {
             steps {
                 script {
+                    def composeCmd = isUnix() ? 'docker compose' : 'docker compose'
+
+                    sh "${composeCmd} -f ${COMPOSE_FILE} up -d --wait"
+                }
+                script {
                     if (isUnix()) {
                         sh """
                             go test -json -tags=functional ./services/... > functional-gotest.json
@@ -87,15 +94,31 @@ pipeline {
                     }
                 }
             }
+            post {
+                always {
+                    script {
+                        def composeCmd = isUnix() ? 'docker compose' : 'docker compose'
+                        sh "${composeCmd} -f ${COMPOSE_FILE} down"
+                    }
+                }
+            }
         }
 
         stage('Push Image') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-                    } else {
-                        powershell "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    script {
+                        if (isUnix()) {
+                            sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
+                            sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                        } else {
+                            powershell "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
+                            powershell "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                        }
                     }
                 }
             }

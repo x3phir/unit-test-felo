@@ -16,7 +16,7 @@ import (
 
 func TestPaymentFunctional_HandleRideCompleted_PersistsProcessedPayment(t *testing.T) {
 	ctx := context.Background()
-	db := openPaymentPG(t, getenv("FELO_PAYMENT_PG_DSN", "postgres://felo:felo@127.0.0.1:54324/payment_db?sslmode=disable"))
+	db := openPaymentPG(t, getenv("FELO_PAYMENT_PG_DSN", "postgres://felo:felo@127.0.0.1:54338/payment_db?sslmode=disable"))
 	t.Cleanup(func() { db.Close() })
 
 	eventID := "evt-ft-001"

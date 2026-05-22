@@ -20,6 +20,7 @@ func TestTrackingFunctional_StartTracking_PersistsSession(t *testing.T) {
 	t.Cleanup(func() { db.Close() })
 
 	initTrackingTables(t, db)
+	cleanupTrackingData(t, db)
 
 	svc := service.NewTrackingService(
 		&pgSessionRepo{db: db},
@@ -62,6 +63,7 @@ func TestTrackingFunctional_RecordLocation_PersistsRecord(t *testing.T) {
 	t.Cleanup(func() { db.Close() })
 
 	initTrackingTables(t, db)
+	cleanupTrackingData(t, db)
 
 	now := time.Date(2026, 5, 5, 10, 0, 0, 0, time.UTC)
 
@@ -112,6 +114,7 @@ func TestTrackingFunctional_StopTracking_UpdatesSession(t *testing.T) {
 	t.Cleanup(func() { db.Close() })
 
 	initTrackingTables(t, db)
+	cleanupTrackingData(t, db)
 
 	now := time.Date(2026, 5, 5, 10, 0, 0, 0, time.UTC)
 
@@ -157,6 +160,7 @@ func TestTrackingFunctional_GetTrackingHistory_ReturnsRecords(t *testing.T) {
 	t.Cleanup(func() { db.Close() })
 
 	initTrackingTables(t, db)
+	cleanupTrackingData(t, db)
 
 	now := time.Date(2026, 5, 5, 10, 0, 0, 0, time.UTC)
 	ended := now.Add(2 * time.Hour)
@@ -169,10 +173,11 @@ func TestTrackingFunctional_GetTrackingHistory_ReturnsRecords(t *testing.T) {
 	)
 
 	for i := 0; i < 3; i++ {
+		recID := fmt.Sprintf("rec-ft-004-%d", i)
 		_, _ = db.Exec(ctx,
 			`insert into tracking_records (record_id, session_id, lat, lng, speed, heading, recorded_at)
 			 values ($1,$2,$3,$4,$5,$6,$7)`,
-			"rec-ft-004-", i, "track-ft-004", -6.2, 106.8, float64(30+i*5), 180.0, now.Add(time.Duration(i)*time.Minute),
+			recID, "track-ft-004", -6.2, 106.8, float64(30+i*5), 180.0, now.Add(time.Duration(i)*time.Minute),
 		)
 	}
 
@@ -304,6 +309,13 @@ func initTrackingTables(t *testing.T, db *pgxpool.Pool) {
 	if err != nil {
 		t.Fatalf("init tracking_records table: %v", err)
 	}
+}
+
+func cleanupTrackingData(t *testing.T, db *pgxpool.Pool) {
+	t.Helper()
+	ctx := context.Background()
+	_, _ = db.Exec(ctx, "delete from tracking_records")
+	_, _ = db.Exec(ctx, "delete from tracking_sessions")
 }
 
 func openTrackingPG(t *testing.T, dsn string) *pgxpool.Pool {
