@@ -127,7 +127,9 @@ docker compose -f docker-compose.functional.yml down --remove-orphans
 
 ## Jenkins CI/CD
 
-CI pipeline (Jenkins): `checkout → unit test → vet → build image → functional test → push image`. Deploy Kubernetes bersifat opsional via parameter.
+CI pipeline (Jenkins): `checkout → vet → build image → infrastructure → per-service tests → push image`. Deploy Kubernetes bersifat opsional via parameter.
+
+Setelah stage `Infrastructure`, pipeline menampilkan stage terpisah untuk setiap service (`Auth Service`, `User Service`, `Ride Service`, dan seterusnya). Setiap stage service menjalankan unit test dan functional test untuk service tersebut. Database functional test tetap dibuat satu kali di awal agar pipeline tidak perlu start/stop container berulang kali.
 
 Parameter Jenkins:
 
@@ -139,6 +141,6 @@ Parameter Jenkins:
 | `RUN_PUSH_IMAGE` | `true` | Push image ke Docker Hub setelah build dan functional test |
 | `RUN_DEPLOY` | `false` | Jalankan deploy dan rollout verification Kubernetes |
 
-Saat Jenkins berjalan di Docker, pipeline otomatis membuat database functional test dari `docker-compose.functional.yml`, menghubungkan container Jenkins ke network Compose, menjalankan functional test, lalu membersihkan container database.
+Saat Jenkins berjalan di Docker, pipeline otomatis membuat database functional test dari `docker-compose.functional.yml`, menghubungkan container Jenkins ke network Compose, menjalankan functional test per service, lalu membersihkan container database.
 
 Lihat [guide.md](./guide.md) untuk panduan testing detail dan `services/{name}/docs/erd.md` untuk ERD tiap service.
