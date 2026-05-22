@@ -11,7 +11,7 @@ Proyek tugas besar **Cloud Computing** Kelompok 24 — platform transportasi onl
 | Anggota | Services | Port Range |
 |---|---|---|
 | **Anas Miftakhul Falah** | auth, user, driver, feedback | 54329–54332 |
-| **Harri Supriadi** | matching, tracking, location, ride | 54321–54325 |
+| **Harri Supriadi** | ride, matching, location, tracking | 54321, 54322, 54325, 54340 |
 | **M. Raffa Mizanul Insan** | order (food), cart, send-order, shipment | 54333–54336 |
 | **Muhammad Adwar Salman** | pricing, payment, wallet | 54337–54339 |
 | **Rafi Ahmad Al Farisi** | invoice, notification, merchant | 54326–54328 |
@@ -50,6 +50,7 @@ services/{name}/
 | `matching-service` | Pencarian driver terdekat | Harri |
 | `location-service` | Data lokasi & geofence | Harri |
 | `ride-service` | Manajemen perjalanan (City) | Harri |
+| `tracking-service` | Live tracking perjalanan & pengiriman | Harri |
 | `order-service` | Pesanan makanan (Food) | Raffa |
 | `cart-service` | Keranjang belanja | Raffa |
 | `send-order-service` | Pesanan pengiriman (Send) | Raffa |
@@ -113,11 +114,11 @@ go test -tags=functional ./services/...  # Functional test
 
 ## Infrastruktur
 
-- **PostgreSQL** — 17 instance (satu per service)
+- **PostgreSQL** — 18 instance (satu per service)
 - **Redis** — Caching & geospatial
 - **RabbitMQ** — Event bus (async komunikasi antar service)
 - **gRPC** — JSON codec (custom encoding, no protobuf)
 
 CI pipeline (Jenkins): `checkout → unit test → vet → build → functional test → deploy`.
 
-Lihat [session-log.md](./session-log.md) untuk catatan pengembangan, [guide.md](./guide.md) untuk panduan testing detail, dan `services/{name}/docs/erd.md` untuk ERD tiap service.
+Lihat [guide.md](./guide.md) untuk panduan testing detail dan `services/{name}/docs/erd.md` untuk ERD tiap service.
