@@ -27,7 +27,8 @@ pipeline {
                 script {
                     def goos = isUnix() ? sh(returnStdout: true, script: 'go env GOOS').trim() : powershell(returnStdout: true, script: 'go env GOOS').trim()
                     def goarch = isUnix() ? sh(returnStdout: true, script: 'go env GOARCH').trim() : powershell(returnStdout: true, script: 'go env GOARCH').trim()
-                    def raceArg = (goos == 'windows' && goarch == '386') ? '' : '-race'
+                    def cgoEnabled = isUnix() ? sh(returnStdout: true, script: 'go env CGO_ENABLED').trim() : powershell(returnStdout: true, script: 'go env CGO_ENABLED').trim()
+                    def raceArg = (cgoEnabled == '1' && !(goos == 'windows' && goarch == '386')) ? '-race' : ''
 
                     if (isUnix()) {
                         sh """
