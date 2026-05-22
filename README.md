@@ -84,7 +84,12 @@ go test -tags=functional ./services/...
 
 # Per service
 go test -tags=functional ./services/order-service/tests/functional/...
+
+# Stop containers setelah selesai
+docker compose -f docker-compose.functional.yml down --remove-orphans
 ```
+
+Functional test memang membutuhkan PostgreSQL. Jika dijalankan tanpa container database, test dengan tag `functional` akan gagal karena koneksi database tidak tersedia.
 
 ### E2E Test
 - Cross-service integration
@@ -110,6 +115,7 @@ go test ./...                          # Unit test semua service
 go vet ./...                           # Lint
 docker compose -f docker-compose.functional.yml up -d  # DB untuk functional test
 go test -tags=functional ./services/...  # Functional test
+docker compose -f docker-compose.functional.yml down --remove-orphans
 ```
 
 ## Infrastruktur
@@ -119,6 +125,20 @@ go test -tags=functional ./services/...  # Functional test
 - **RabbitMQ** — Event bus (async komunikasi antar service)
 - **gRPC** — JSON codec (custom encoding, no protobuf)
 
-CI pipeline (Jenkins): `checkout → unit test → vet → build → functional test → deploy`.
+## Jenkins CI/CD
+
+CI pipeline (Jenkins): `checkout → unit test → vet → build image → functional test → push image`. Deploy Kubernetes bersifat opsional via parameter.
+
+Parameter Jenkins:
+
+| Parameter | Default | Keterangan |
+|---|---|---|
+| `DOCKERHUB_NAMESPACE` | `piipapoy` | Username/organization Docker Hub tujuan push image |
+| `DOCKER_IMAGE_NAME` | `felo-backend` | Nama repository image Docker |
+| `DOCKER_CREDENTIAL_ID` | `dockerhub-login` | ID credential Jenkins untuk Docker Hub |
+| `RUN_PUSH_IMAGE` | `true` | Push image ke Docker Hub setelah build dan functional test |
+| `RUN_DEPLOY` | `false` | Jalankan deploy dan rollout verification Kubernetes |
+
+Saat Jenkins berjalan di Docker, pipeline otomatis membuat database functional test dari `docker-compose.functional.yml`, menghubungkan container Jenkins ke network Compose, menjalankan functional test, lalu membersihkan container database.
 
 Lihat [guide.md](./guide.md) untuk panduan testing detail dan `services/{name}/docs/erd.md` untuk ERD tiap service.
