@@ -39,11 +39,19 @@ pipeline {
                         """
                     } else {
                         powershell """
-                            go test -json ${raceArg} -covermode=atomic -coverpkg='./services/...' -coverprofile='coverage.out' ./services/... | Tee-Object -FilePath 'gotest.json'
+                            # Run tests, write JSON via cmd redirection (pure ASCII, no BOM)
+                            cmd /c "go test -json ${raceArg} -covermode=atomic -coverpkg=./services/... -coverprofile=coverage.out ./services/... > gotest.json"
+                            # Show test output
+                            Get-Content -Path gotest.json -Encoding ascii | Out-Host
+                            # Run auxiliary tools
                             go test ${raceArg} ./tools/...
                             go tool cover -html='coverage.out' -o 'coverage.html'
-                            Get-Content -Path 'gotest.json' -Encoding UTF8 | go run ./tools/gotest2junit | Out-File -FilePath 'junit.xml' -Encoding ascii
-                            \$t = \$env:COVERAGE_THRESHOLD; cmd /c "go run ./tools/coveragecheck -file coverage.out -threshold \$t || exit 0"
+                            # Convert to JUnit (cmd pipe — no BOM issues)
+                            cmd /c "type gotest.json | go run ./tools/gotest2junit > junit.xml"
+                            # Coverage check (non-fatal: reset LASTEXITCODE so step doesn't fail)
+                            go run ./tools/coveragecheck -file coverage.out -threshold \$env:COVERAGE_THRESHOLD
+                            if (\$LASTEXITCODE -ne 0) { Write-Host "Coverage below threshold (exit \$LASTEXITCODE) — continuing" }
+                            \$LASTEXITCODE = 0
                         """
                     }
                 }
@@ -78,9 +86,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "docker compose -f ${COMPOSE_FILE} down && docker compose -f ${COMPOSE_FILE} rm -f && docker compose -f ${COMPOSE_FILE} up -d --wait"
+                        sh "docker compose -f ${COMPOSE_FILE} down --remove-orphans && docker compose -f ${COMPOSE_FILE} up -d --wait --force-recreate --remove-orphans"
                     } else {
-                        powershell "docker compose -f ${COMPOSE_FILE} down; docker compose -f ${COMPOSE_FILE} rm -f; docker compose -f ${COMPOSE_FILE} up -d --wait"
+                        powershell "docker compose -f ${COMPOSE_FILE} down --remove-orphans; docker compose -f ${COMPOSE_FILE} up -d --wait --force-recreate --remove-orphans"
                     }
                 }
                 script {
@@ -91,8 +99,9 @@ pipeline {
                         """
                     } else {
                         powershell """
-                            go test -json -tags=functional ./services/... | Tee-Object -FilePath 'functional-gotest.json'
-                            Get-Content -Path 'functional-gotest.json' -Encoding UTF8 | go run ./tools/gotest2junit | Out-File -FilePath 'functional-junit.xml' -Encoding ascii
+                            cmd /c "go test -json -tags=functional ./services/... > functional-gotest.json"
+                            Get-Content functional-gotest.json -Encoding ascii | Out-Host
+                            cmd /c "type functional-gotest.json | go run ./tools/gotest2junit > functional-junit.xml"
                         """
                     }
                 }
