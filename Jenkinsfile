@@ -129,10 +129,22 @@ pipeline {
                     script {
                         if (isUnix()) {
                             sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
-                            sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                            retry(2) {
+                                sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                            }
                         } else {
-                            powershell "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
-                            powershell "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                            retry(2) {
+                                powershell """
+                                    # Use temp Docker config dir to avoid credsStore (SYSTEM account can't access desktop credential helper)
+                                    \$tmpDir = Join-Path \$env:TEMP ('docker-config-' + [System.IO.Path]::GetRandomFileName())
+                                    New-Item -ItemType Directory -Path \$tmpDir -Force | Out-Null
+                                    '{ "auths": {} }' | Set-Content -Path (Join-Path \$tmpDir 'config.json') -Encoding ascii
+                                    \$env:DOCKER_CONFIG = \$tmpDir
+                                    Write-Output ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin 2>&1
+                                    docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                                    Remove-Item -Path \$tmpDir -Recurse -Force -ErrorAction SilentlyContinue
+                                """
+                            }
                         }
                     }
                 }
