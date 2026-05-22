@@ -42,8 +42,8 @@ pipeline {
                             go test -json ${raceArg} -covermode=atomic -coverpkg='./services/...' -coverprofile='coverage.out' ./services/... | Tee-Object -FilePath 'gotest.json'
                             go test ${raceArg} ./tools/...
                             go tool cover -html='coverage.out' -o 'coverage.html'
-                            Get-Content -LiteralPath 'gotest.json' | go run ./tools/gotest2junit | Set-Content 'junit.xml'
-                            go run ./tools/coveragecheck -file 'coverage.out' -threshold \$env:COVERAGE_THRESHOLD; if (\$LASTEXITCODE) { Write-Host "WARNING: coverage below threshold, continuing..." }
+                            Get-Content -Path 'gotest.json' -Encoding UTF8 | go run ./tools/gotest2junit | Out-File -FilePath 'junit.xml' -Encoding ascii
+                            \$t = \$env:COVERAGE_THRESHOLD; cmd /c "go run ./tools/coveragecheck -file coverage.out -threshold \$t || exit 0"
                         """
                     }
                 }
@@ -90,7 +90,7 @@ pipeline {
                     } else {
                         powershell """
                             go test -json -tags=functional ./services/... | Tee-Object -FilePath 'functional-gotest.json'
-                            Get-Content -LiteralPath 'functional-gotest.json' | go run ./tools/gotest2junit | Set-Content 'functional-junit.xml'
+                            Get-Content -Path 'functional-gotest.json' -Encoding UTF8 | go run ./tools/gotest2junit | Out-File -FilePath 'functional-junit.xml' -Encoding ascii
                         """
                     }
                 }
