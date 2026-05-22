@@ -78,9 +78,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "docker compose -f ${COMPOSE_FILE} up -d --wait"
+                        sh "docker compose -f ${COMPOSE_FILE} down && docker compose -f ${COMPOSE_FILE} rm -f && docker compose -f ${COMPOSE_FILE} up -d --wait"
                     } else {
-                        powershell "docker compose -f ${COMPOSE_FILE} up -d --wait"
+                        powershell "docker compose -f ${COMPOSE_FILE} down; docker compose -f ${COMPOSE_FILE} rm -f; docker compose -f ${COMPOSE_FILE} up -d --wait"
                     }
                 }
                 script {
