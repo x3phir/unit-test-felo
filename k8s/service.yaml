@@ -23,4 +23,43 @@ spec:
   - port: 50055
     targetPort: 50055
     name: location-grpc
+  - port: 50056
+    targetPort: 50056
+    name: auth-grpc
+  - port: 50057
+    targetPort: 50057
+    name: user-grpc
+  - port: 50058
+    targetPort: 50058
+    name: driver-grpc
+  - port: 50059
+    targetPort: 50059
+    name: order-grpc
+  - port: 50060
+    targetPort: 50060
+    name: cart-grpc
+  - port: 50061
+    targetPort: 50061
+    name: pricing-grpc
+  - port: 50062
+    targetPort: 50062
+    name: sendorder-grpc
+  - port: 50063
+    targetPort: 50063
+    name: shipment-grpc
+  - port: 50064
+    targetPort: 50064
+    name: tracking-grpc
+  - port: 50065
+    targetPort: 50065
+    name: merchant-grpc
+  - port: 50066
+    targetPort: 50066
+    name: invoice-grpc
+  - port: 50067
+    targetPort: 50067
+    name: notification-grpc
+  - port: 50068
+    targetPort: 50068
+    name: feedback-grpc
   type: ClusterIP

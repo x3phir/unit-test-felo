@@ -28,6 +28,32 @@ spec:
           name: payment-grpc
         - containerPort: 50055
           name: location-grpc
+        - containerPort: 50056
+          name: auth-grpc
+        - containerPort: 50057
+          name: user-grpc
+        - containerPort: 50058
+          name: driver-grpc
+        - containerPort: 50059
+          name: order-grpc
+        - containerPort: 50060
+          name: cart-grpc
+        - containerPort: 50061
+          name: pricing-grpc
+        - containerPort: 50062
+          name: sendorder-grpc
+        - containerPort: 50063
+          name: shipment-grpc
+        - containerPort: 50064
+          name: tracking-grpc
+        - containerPort: 50065
+          name: merchant-grpc
+        - containerPort: 50066
+          name: invoice-grpc
+        - containerPort: 50067
+          name: notification-grpc
+        - containerPort: 50068
+          name: feedback-grpc
         env:
         - name: FELO_AUTH_JWT
           value: "demo-functional-token"
@@ -41,6 +67,32 @@ spec:
           value: "postgres://felo:felo@postgres-payment:5432/payment_db?sslmode=disable"
         - name: FELO_LOCATION_PG_DSN
           value: "postgres://felo:felo@postgres-location:5432/location_db?sslmode=disable"
+        - name: FELO_AUTH_PG_DSN
+          value: "postgres://felo:felo@postgres-auth:5432/auth_db?sslmode=disable"
+        - name: FELO_USER_PG_DSN
+          value: "postgres://felo:felo@postgres-user:5432/user_db?sslmode=disable"
+        - name: FELO_DRIVER_PG_DSN
+          value: "postgres://felo:felo@postgres-driver:5432/driver_db?sslmode=disable"
+        - name: FELO_ORDER_PG_DSN
+          value: "postgres://felo:felo@postgres-order:5432/order_db?sslmode=disable"
+        - name: FELO_CART_PG_DSN
+          value: "postgres://felo:felo@postgres-cart:5432/cart_db?sslmode=disable"
+        - name: FELO_PRICING_PG_DSN
+          value: "postgres://felo:felo@postgres-pricing:5432/pricing_db?sslmode=disable"
+        - name: FELO_SENDORDER_PG_DSN
+          value: "postgres://felo:felo@postgres-sendorder:5432/sendorder_db?sslmode=disable"
+        - name: FELO_SHIPMENT_PG_DSN
+          value: "postgres://felo:felo@postgres-shipment:5432/shipment_db?sslmode=disable"
+        - name: FELO_TRACKING_PG_DSN
+          value: "postgres://felo:felo@postgres-tracking:5432/tracking_db?sslmode=disable"
+        - name: FELO_MERCHANT_PG_DSN
+          value: "postgres://felo:felo@postgres-merchant:5432/merchant_db?sslmode=disable"
+        - name: FELO_INVOICE_PG_DSN
+          value: "postgres://felo:felo@postgres-invoice:5432/invoice_db?sslmode=disable"
+        - name: FELO_NOTIFICATION_PG_DSN
+          value: "postgres://felo:felo@postgres-notification:5432/notification_db?sslmode=disable"
+        - name: FELO_FEEDBACK_PG_DSN
+          value: "postgres://felo:felo@postgres-feedback:5432/feedback_db?sslmode=disable"
         - name: FELO_REDIS_ADDR
           value: "redis:6379"
         - name: FELO_RABBITMQ_URL

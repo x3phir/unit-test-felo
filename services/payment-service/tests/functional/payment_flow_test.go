@@ -4,7 +4,6 @@ package functional_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -109,22 +108,6 @@ values ($1,$2,$3,$4,$5,$6,$7)`,
 	return err
 }
 
-type noopWalletClient struct{}
-
-func (noopWalletClient) DebitCustomer(_ context.Context, _ string, _ int64, _ string) error {
-	return nil
-}
-
-type noopInvoiceClient struct{}
-
-func (noopInvoiceClient) IssueRideInvoice(_ context.Context, _ string, _ string, _ int64, _ string) (string, error) {
-	return "inv-ft-001", nil
-}
-
-type noopPaymentPublisher struct{}
-
-func (noopPaymentPublisher) Publish(_ context.Context, _ domain.Event) error { return nil }
-
 func initPaymentTables(t *testing.T, db *pgxpool.Pool) {
 	t.Helper()
 	ctx := context.Background()
@@ -140,20 +123,4 @@ func initPaymentTables(t *testing.T, db *pgxpool.Pool) {
 	if err != nil {
 		t.Fatalf("initPaymentTables: %v", err)
 	}
-}
-
-func openPaymentPG(t *testing.T, dsn string) *pgxpool.Pool {
-	t.Helper()
-	db, err := pgxpool.New(context.Background(), dsn)
-	if err != nil {
-		t.Fatalf("pgxpool.New() error = %v", err)
-	}
-	return db
-}
-
-func getenv(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return fallback
 }

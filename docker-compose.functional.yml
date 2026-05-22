@@ -251,6 +251,21 @@ services:
       timeout: 5s
       retries: 20
 
+  postgres-tracking:
+    image: postgres:16-alpine
+    container_name: felo-postgres-tracking
+    environment:
+      POSTGRES_USER: felo
+      POSTGRES_PASSWORD: felo
+      POSTGRES_DB: tracking_db
+    ports:
+      - "54340:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felo -d tracking_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   postgres-notification:
     image: postgres:16-alpine
     container_name: felo-postgres-notification
