@@ -128,21 +128,19 @@ pipeline {
                 )]) {
                     script {
                         if (isUnix()) {
-                            sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
                             retry(2) {
-                                sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                                sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} && docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
                             }
                         } else {
                             retry(2) {
                                 powershell """
-                                    # Use temp Docker config dir to avoid credsStore (SYSTEM account can't access desktop credential helper)
-                                    \$tmpDir = Join-Path \$env:TEMP ('docker-config-' + [System.IO.Path]::GetRandomFileName())
-                                    New-Item -ItemType Directory -Path \$tmpDir -Force | Out-Null
-                                    '{ "auths": {} }' | Set-Content -Path (Join-Path \$tmpDir 'config.json') -Encoding ascii
-                                    \$env:DOCKER_CONFIG = \$tmpDir
-                                    Write-Output ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin 2>&1
-                                    docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
-                                    Remove-Item -Path \$tmpDir -Recurse -Force -ErrorAction SilentlyContinue
+                                    # Direct credential injection into temp config (bypass SYSTEM credsStore)
+                                    \$dockerDir = Join-Path \$env:TEMP ('.docker-' + [System.IO.Path]::GetRandomFileName())
+                                    New-Item -ItemType Directory -Path \$dockerDir -Force | Out-Null
+                                    \$auth = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('${DOCKER_USER}:${DOCKER_PASS}'))
+                                    '{"auths":{"https://index.docker.io/v1/":{"auth":"' + \$auth + '"}}}' | Set-Content -Path (Join-Path \$dockerDir 'config.json') -Encoding ascii
+                                    docker --config \$dockerDir push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                                    Remove-Item -Path \$dockerDir -Recurse -Force -ErrorAction SilentlyContinue
                                 """
                             }
                         }
