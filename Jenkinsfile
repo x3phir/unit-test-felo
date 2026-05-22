@@ -12,6 +12,7 @@ pipeline {
         REGISTRY = 'docker.io/harrskrt'
         COMPOSE_FILE = 'docker-compose.functional.yml'
         FELO_AUTH_JWT = 'demo-functional-token'
+        KUBECONFIG = 'C:\\Users\\Harri Supriadi\\.kube\\config'
     }
 
     stages {
@@ -107,7 +108,7 @@ pipeline {
         stage('Push Image') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-credentials',
+                    credentialsId: 'dockerhub-login',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -128,9 +129,17 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "kubectl set image deployment/felo-backend felo-backend=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} --record"
+                        sh """
+                            minikube status || minikube start --driver=docker
+                            kubectl set image deployment/felo-backend felo-backend=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} --record
+                        """
                     } else {
-                        powershell "kubectl set image deployment/felo-backend felo-backend=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} --record"
+                        powershell """
+                            \$env:PATH = \"C:\\tools;\" + \$env:PATH
+                            minikube status 2>&1 | Out-Null
+                            if (\$LASTEXITCODE -ne 0) { minikube start --driver=docker }
+                            kubectl set image deployment/felo-backend felo-backend=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} --record
+                        """
                     }
                 }
             }
