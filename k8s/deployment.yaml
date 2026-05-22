@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: felo-backend
+  labels:
+    app: felo-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: felo-backend
+  template:
+    metadata:
+      labels:
+        app: felo-backend
+    spec:
+      containers:
+      - name: felo-backend
+        image: harrskrt/felo-backend:latest
+        ports:
+        - containerPort: 50051
+          name: ride-grpc
+        - containerPort: 50052
+          name: matching-grpc
+        - containerPort: 50053
+          name: wallet-grpc
+        - containerPort: 50054
+          name: payment-grpc
+        - containerPort: 50055
+          name: location-grpc
+        env:
+        - name: FELO_AUTH_JWT
+          value: "demo-functional-token"
+        - name: FELO_RIDE_PG_DSN
+          value: "postgres://felo:felo@postgres-ride:5432/ride_db?sslmode=disable"
+        - name: FELO_MATCHING_PG_DSN
+          value: "postgres://felo:felo@postgres-matching:5432/matching_db?sslmode=disable"
+        - name: FELO_WALLET_PG_DSN
+          value: "postgres://felo:felo@postgres-wallet:5432/wallet_db?sslmode=disable"
+        - name: FELO_PAYMENT_PG_DSN
+          value: "postgres://felo:felo@postgres-payment:5432/payment_db?sslmode=disable"
+        - name: FELO_LOCATION_PG_DSN
+          value: "postgres://felo:felo@postgres-location:5432/location_db?sslmode=disable"
+        - name: FELO_REDIS_ADDR
+          value: "redis:6379"
+        - name: FELO_RABBITMQ_URL
+          value: "amqp://felo:felo@rabbitmq:5672/"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: felo-backend
+  labels:
+    app: felo-backend
+spec:
+  selector:
+    app: felo-backend
+  ports:
+  - port: 50051
+    targetPort: 50051
+    name: ride-grpc
+  - port: 50052
+    targetPort: 50052
+    name: matching-grpc
+  - port: 50053
+    targetPort: 50053
+    name: wallet-grpc
+  - port: 50054
+    targetPort: 50054
+    name: payment-grpc
+  - port: 50055
+    targetPort: 50055
+    name: location-grpc
+  type: ClusterIP

@@ -9,7 +9,7 @@ pipeline {
         COVERAGE_THRESHOLD = '70'
         IMAGE_NAME = 'felo-backend'
         IMAGE_TAG = "${env.BUILD_NUMBER ?: 'latest'}"
-        REGISTRY = 'docker.io/felo'
+        REGISTRY = 'docker.io/harrskrt'
     }
 
     stages {
