@@ -87,7 +87,7 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "docker ps -aq -f name=felo- | xargs docker rm -f 2>/dev/null; docker compose -f ${COMPOSE_FILE} up -d --force-recreate --remove-orphans && sleep 15"
+                        sh "docker ps -aq -f name=felo- | xargs -r docker rm -f 2>/dev/null; docker compose -f ${COMPOSE_FILE} up -d --force-recreate --remove-orphans && sleep 15"
                     } else {
                         powershell "docker ps -a -q -f name=felo- | ForEach-Object { docker rm -f \$_ >\$null 2>&1 }; docker compose -f ${COMPOSE_FILE} up -d --force-recreate --remove-orphans; Start-Sleep -Seconds 15"
                     }
