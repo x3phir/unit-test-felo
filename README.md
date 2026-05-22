@@ -94,4 +94,4 @@ Repo ini memiliki 18 service dan 18 PostgreSQL instance untuk functional test.
 | `wallet-service` | 54339 |
 | `tracking-service` | 54340 |
 
-Dokumentasi detail tambahan ada di `guide.md` dan `services/{service}/docs/erd.md`.
+ERD tiap service tersedia di `services/{service}/docs/erd.md`.
