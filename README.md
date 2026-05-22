@@ -1,135 +1,51 @@
 # FELO Backend Monorepo
 
-Proyek tugas besar **Cloud Computing** Kelompok 24 — platform transportasi online (ride-hailing, food delivery, package delivery).
+Tugas besar **Cloud Computing** Kelompok 24. Repo ini berisi unit test dan functional test untuk 18 microservice FELO.
 
-**Stack:** Go 1.25, gRPC + JSON codec, PostgreSQL, Redis, RabbitMQ
+**Stack:** Go 1.25, PostgreSQL, Redis, RabbitMQ, gRPC JSON codec.
 
----
+## Cara Menjalankan Test
 
-## Team & Service Ownership
+### 1. Unit Test
 
-| Anggota | Services | Port Range |
-|---|---|---|
-| **Anas Miftakhul Falah** | auth, user, driver, feedback | 54329–54332 |
-| **Harri Supriadi** | ride, matching, location, tracking | 54321, 54322, 54325, 54340 |
-| **M. Raffa Mizanul Insan** | order (food), cart, send-order, shipment | 54333–54336 |
-| **Muhammad Adwar Salman** | pricing, payment, wallet | 54337–54339 |
-| **Rafi Ahmad Al Farisi** | invoice, notification, merchant | 54326–54328 |
-
-## Architecture
-
-Setiap microservice mengikuti **Clean Architecture**:
-
-```
-services/{name}/
-├── internal/
-│   ├── domain/{name}.go        # Entity/struct definitions
-│   ├── ports/interfaces.go     # Repository & client interfaces
-│   └── service/{name}_service.go  # Business logic
-├── tests/
-│   ├── unit/{name}_test.go     # Unit test (mock-based, no DB)
-│   └── functional/{name}_test.go  # Functional test (real PostgreSQL)
-└── docs/
-    └── erd.md                  # ERD diagram
-```
-
-### Service List
-
-| Service | Description | PJ |
-|---|---|---|
-| `auth-service` | Autentikasi, OTP, manajemen sesi | Anas |
-| `user-service` | Profil & alamat pengguna | Anas |
-| `driver-service` | Manajemen driver & KYC | Anas |
-| `feedback-service` | Rating & ulasan | Anas |
-| `pricing-service` | Kalkulasi tarif & surge pricing | Adwar |
-| `payment-service` | Proses pembayaran ride | Adwar |
-| `wallet-service` | Dompet digital & settlement | Adwar |
-| `invoice-service` | Nota digital & penanggung biaya | Rafi |
-| `notification-service` | Push/WhatsApp/SMS notification | Rafi |
-| `merchant-service` | Restoran & menu | Rafi |
-| `matching-service` | Pencarian driver terdekat | Harri |
-| `location-service` | Data lokasi & geofence | Harri |
-| `ride-service` | Manajemen perjalanan (City) | Harri |
-| `tracking-service` | Live tracking perjalanan & pengiriman | Harri |
-| `order-service` | Pesanan makanan (Food) | Raffa |
-| `cart-service` | Keranjang belanja | Raffa |
-| `send-order-service` | Pesanan pengiriman (Send) | Raffa |
-| `shipment-service` | Tracking pengiriman | Raffa |
-
-## Testing
-
-Tiga level testing:
-
-### Unit Test
-- Mock-based (go.uber.org/mock), no DB access
-- Covers business logic & edge cases
+Unit test tidak mengakses database atau service eksternal.
 
 ```bash
-go test ./...
-go test -v ./services/ride-service/...
+go test ./services/...
 ```
 
-### Functional Test
-- Real PostgreSQL via `pgxpool`
-- Build tag: `//go:build functional`
-- `CREATE TABLE IF NOT EXISTS` di setup
-- Pola: `initXxxTables` → seed → call service → assert DB state
+### 2. Functional Test
+
+Functional test mengakses PostgreSQL asli. Jalankan database test terlebih dahulu:
 
 ```bash
-# Start containers
 docker compose -f docker-compose.functional.yml up -d
-
-# Run semua functional test
 go test -tags=functional ./services/...
-
-# Per service
-go test -tags=functional ./services/order-service/tests/functional/...
-
-# Stop containers setelah selesai
 docker compose -f docker-compose.functional.yml down --remove-orphans
 ```
 
-Functional test memang membutuhkan PostgreSQL. Jika dijalankan tanpa container database, test dengan tag `functional` akan gagal karena koneksi database tidak tersedia.
+Jika command functional test dijalankan tanpa database, test akan gagal karena koneksi PostgreSQL tidak tersedia.
 
-### E2E Test
-- Cross-service integration
-- Build tag: `//go:build e2e`
+### 3. Test Per Service
 
 ```bash
-go test -tags=e2e ./tests/e2e/...
+go test ./services/auth-service/...
+go test -tags=functional ./services/auth-service/...
 ```
 
-### Coverage
-
-```bash
-go test -covermode=atomic -coverprofile=coverage.out ./services/...
-go run ./tools/coveragecheck -file coverage.out -threshold 70
-```
-
-Target: **70% overall**, **80% business logic**.
-
-## Quick Start
-
-```bash
-go test ./...                          # Unit test semua service
-go vet ./...                           # Lint
-docker compose -f docker-compose.functional.yml up -d  # DB untuk functional test
-go test -tags=functional ./services/...  # Functional test
-docker compose -f docker-compose.functional.yml down --remove-orphans
-```
-
-## Infrastruktur
-
-- **PostgreSQL** — 18 instance (satu per service)
-- **Redis** — Caching & geospatial
-- **RabbitMQ** — Event bus (async komunikasi antar service)
-- **gRPC** — JSON codec (custom encoding, no protobuf)
+Ganti `auth-service` dengan service lain sesuai kebutuhan.
 
 ## Jenkins CI/CD
 
-CI pipeline (Jenkins): `checkout → vet → build image → infrastructure → per-service tests → push image`. Deploy Kubernetes bersifat opsional via parameter.
+Pipeline Jenkins menjalankan:
 
-Setelah stage `Infrastructure`, pipeline menampilkan stage terpisah untuk setiap service (`Auth Service`, `User Service`, `Ride Service`, dan seterusnya). Setiap stage service menjalankan unit test dan functional test untuk service tersebut. Database functional test tetap dibuat satu kali di awal agar pipeline tidak perlu start/stop container berulang kali.
+```text
+checkout -> vet -> build image -> infrastructure -> per-service tests -> push image
+```
+
+Stage `Infrastructure` otomatis menjalankan `docker-compose.functional.yml`, menghubungkan container Jenkins ke network Compose, lalu membersihkan container setelah test selesai.
+
+Setelah `Infrastructure`, Jenkins menampilkan stage terpisah untuk setiap service, misalnya `Auth Service`, `User Service`, `Ride Service`, dan seterusnya. Setiap service stage menjalankan unit test dan functional test untuk service tersebut.
 
 Parameter Jenkins:
 
@@ -138,9 +54,44 @@ Parameter Jenkins:
 | `DOCKERHUB_NAMESPACE` | `piipapoy` | Username/organization Docker Hub tujuan push image |
 | `DOCKER_IMAGE_NAME` | `felo-backend` | Nama repository image Docker |
 | `DOCKER_CREDENTIAL_ID` | `dockerhub-login` | ID credential Jenkins untuk Docker Hub |
-| `RUN_PUSH_IMAGE` | `true` | Push image ke Docker Hub setelah build dan functional test |
-| `RUN_DEPLOY` | `false` | Jalankan deploy dan rollout verification Kubernetes |
+| `RUN_PUSH_IMAGE` | `true` | Push image setelah test selesai |
+| `RUN_DEPLOY` | `false` | Jalankan deploy Kubernetes opsional |
 
-Saat Jenkins berjalan di Docker, pipeline otomatis membuat database functional test dari `docker-compose.functional.yml`, menghubungkan container Jenkins ke network Compose, menjalankan functional test per service, lalu membersihkan container database.
+Untuk penilaian test saja, `RUN_DEPLOY` dapat dibiarkan `false`.
 
-Lihat [guide.md](./guide.md) untuk panduan testing detail dan `services/{name}/docs/erd.md` untuk ERD tiap service.
+## Struktur Test
+
+```text
+services/{service}/
+├── internal/                 # domain, port, service logic
+├── tests/unit/               # unit test, tanpa DB
+├── tests/functional/         # functional test, dengan PostgreSQL
+└── docs/erd.md               # ERD service
+```
+
+## Service dan Database
+
+Repo ini memiliki 18 service dan 18 PostgreSQL instance untuk functional test.
+
+| Service | Port DB |
+|---|---:|
+| `ride-service` | 54321 |
+| `matching-service` | 54322 |
+| `location-service` | 54325 |
+| `invoice-service` | 54326 |
+| `merchant-service` | 54327 |
+| `notification-service` | 54328 |
+| `auth-service` | 54329 |
+| `user-service` | 54330 |
+| `driver-service` | 54331 |
+| `feedback-service` | 54332 |
+| `order-service` | 54333 |
+| `cart-service` | 54334 |
+| `send-order-service` | 54335 |
+| `shipment-service` | 54336 |
+| `pricing-service` | 54337 |
+| `payment-service` | 54338 |
+| `wallet-service` | 54339 |
+| `tracking-service` | 54340 |
+
+Dokumentasi detail tambahan ada di `guide.md` dan `services/{service}/docs/erd.md`.
