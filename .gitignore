@@ -12,7 +12,9 @@ dist/
 *.md
 !README.md
 !guide.md
-/docs/
+/docs/*
+!/docs/analytics/
+!/docs/analytics/*.md
 services/*/README.md
 services/*/docs/*
 !services/*/docs/erd.md
