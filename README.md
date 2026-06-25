@@ -8,7 +8,7 @@ Tugas besar **Cloud Computing** Kelompok 24. Repo ini berisi unit test dan funct
 
 ### 1. Unit Test
 
-Unit test tidak mengakses database atau service eksternal.
+Unit test tidak mengakses database atau service eksternal
 
 ```bash
 go test ./services/...
